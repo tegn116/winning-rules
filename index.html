@@ -1352,7 +1352,8 @@ window.addEventListener('click',e=>{
 });
 
 // ===== AUTO REFRESH =====
-setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},30000);
+// 3분마다 자동 새로고침 (탭 활성 상태일 때만)
+setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},180000);
 
 // ===== INIT =====
 loadNotifySettings();
@@ -1360,4 +1361,3 @@ if(GAS_URL){loadFromSheets();}else{showToast('⚙ 설정에서 Google Sheets URL
 </script>
 </body>
 </html>
-
