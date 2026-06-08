@@ -236,6 +236,55 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .notify-status{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:10px;margin-top:5px}
 .ns-ok{background:rgba(0,178,169,.1);color:var(--accent)}
 .ns-no{background:var(--bg3);color:var(--text3)}
+
+/* ===== 🔥 불타오르는 그룹사 — 오늘 작성량(컨텐츠 수) 기준 =====
+   · 오늘 3개부터 점화, 10개에서 불꽃 최대(--heat: 0~1 로 세기 조절)
+   · 세기 조절은 winning-rules JS 의 FIRE_MIN / FIRE_MAX 값으로 변경 가능 */
+@keyframes wrFlicker{
+  0%,100%{transform:translateY(0) scale(1) rotate(0);opacity:1}
+  20%{transform:translateY(-1.5px) scale(1.12) rotate(-4deg);opacity:.9}
+  45%{transform:translateY(.5px) scale(.94) rotate(3deg);opacity:1}
+  70%{transform:translateY(-1px) scale(1.06) rotate(-2deg);opacity:.95}
+}
+@keyframes wrHeatGlow{
+  0%,100%{box-shadow:0 0 calc(5px + var(--heat,0)*12px) rgba(255,120,20,calc(.22 + var(--heat,0)*.45)), 0 1px 4px rgba(0,0,0,.06)}
+  50%{box-shadow:0 0 calc(10px + var(--heat,0)*26px) rgba(255,70,0,calc(.38 + var(--heat,0)*.5)), 0 1px 4px rgba(0,0,0,.06)}
+}
+@keyframes wrShimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes wrEmber{
+  0%{transform:translateY(2px) scale(1);opacity:0}
+  15%{opacity:.85}
+  100%{transform:translateY(-22px) scale(.3);opacity:0}
+}
+.col-header.burning{
+  position:relative;overflow:visible;
+  background:linear-gradient(90deg,#fff4e6,#ffe2b8,#ffd0a8,#ffe2b8,#fff4e6);
+  background-size:200% 100%;color:#9a3412;font-weight:800;
+  border:1px solid rgba(255,120,20,calc(.3 + var(--heat,0)*.4));
+  /* 불꽃 세기(--heat)는 위 glow 크기/투명도로 표현. duration은 고정(브라우저 호환·단순화) */
+  animation:wrHeatGlow 1.4s ease-in-out infinite,
+            wrShimmer 5s linear infinite;
+}
+.col-header.burning .co-dot{box-shadow:0 0 7px rgba(255,90,0,.85)}
+.col-header.burning .col-count{background:rgba(255,255,255,.75);color:#c2410c}
+/* 불꽃은 1개 — 크기(transform:scale)로 세기 표현. 레이아웃 폭/높이는 고정 → 카드 크기 불변 */
+.col-flames{display:inline-flex;align-items:center;line-height:1;transform-origin:center bottom;filter:drop-shadow(0 0 3px rgba(255,90,0,.5))}
+.col-flames .flame{display:inline-block;font-size:15px;transform-origin:bottom center;animation:wrFlicker .8s ease-in-out infinite}
+.fire-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:800;
+  padding:3px 8px;border-radius:20px;color:#fff;white-space:nowrap;
+  background:linear-gradient(135deg,#ff7a00,#ff2d00);box-shadow:0 1px 5px rgba(255,60,0,.45);
+  animation:wrFlicker 1.2s ease-in-out infinite}
+.col-ember{position:absolute;bottom:6px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle,#ffd27a,#ff6a00);pointer-events:none;animation:wrEmber 1.4s ease-out infinite}
+/* 헤더 1줄 고정: 회사명이 세로로 줄바꿈되어 카드 높이가 변하지 않도록 */
+.col-header{white-space:nowrap}
+.col-header .co-name{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.col-header .co-dot,.col-header .col-count,.col-header .col-flames,.col-header .fire-badge{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){
+  .col-header.burning,.col-flames .flame,.fire-badge,.col-ember{animation:none!important}
+}
+/* 좁은 화면에서는 불씨(ember)가 뱃지와 겹칠 수 있어 숨김 (장식 요소) */
+@media(max-width:600px){.col-ember{display:none}}
 </style>
 </head>
 <body>
@@ -728,12 +777,41 @@ function renderBubble(node,ci,depth=0){
   </div>`;
 }
 
+// ===== 🔥 불타오르는 그룹사 — 오늘 작성량(컨텐츠 수) 기준 =====
+// ▼ 점화/최대 기준을 바꾸려면 아래 두 숫자만 수정 후 페이지 새로고침
+const FIRE_MIN=3;   // 오늘 몇 개부터 불이 붙을지 (3개 이상부터 점화)
+const FIRE_MAX=10;  // 몇 개에서 불꽃이 최대가 될지 (10개에서 활활)
+// 같은 '오늘(로컬 날짜)'에 작성됐는지 판단
+function isToday(ts){
+  if(!ts)return false;
+  const d=new Date(ts),n=new Date();
+  return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();
+}
+// 해당 그룹사가 '오늘' 작성한 컨텐츠 수
+function getTodayCount(company){
+  return DATA.filter(d=>d.company===company&&isToday(d.createdAt)).length;
+}
+// 불꽃 세기 0~1 (FIRE_MIN 미만=0, FIRE_MAX 이상=1로 클램프) — CSS --heat 로 글로우 크기/투명도 조절
+function getHeat(count){
+  if(count<FIRE_MIN)return 0;
+  return Math.min(1,(count-FIRE_MIN)/(FIRE_MAX-FIRE_MIN));
+}
+// 불꽃 크기 배율 1.0(점화)~약1.9(최대) — 불꽃 1개를 키워서 세기를 표현 (개수 X)
+function getFlameScale(count){
+  return 1+getHeat(count)*0.9;
+}
+
 function render(){
   // stats
   const counts=[0,0,0,0];
   DATA.forEach(d=>{const i=coIdx(d.company);if(i>=0)counts[i]++;});
   document.getElementById('s-total').textContent=DATA.length;
-  counts.forEach((c,i)=>document.getElementById('s-c'+i).textContent=c);
+  counts.forEach((c,i)=>{
+    const el=document.getElementById('s-c'+i);
+    if(!el)return;
+    const hot=getTodayCount(COMPANIES[i])>=FIRE_MIN; // 오늘 작성량이 점화 기준 이상이면 통계에도 불꽃
+    el.innerHTML=c+(hot?' <span style="font-size:16px;vertical-align:middle;margin-left:2px" title="오늘 활발히 작성 중">🔥</span>':'');
+  });
 
   // 4 columns
   const col=document.getElementById('four-col');
@@ -741,12 +819,28 @@ function render(){
     const roots=buildChain(co);
     const c=CO_COLORS[ci];
     const cnt=DATA.filter(d=>d.company===co).length;
+    // 🔥 오늘 작성량 기반 불꽃 계산
+    const todayN=getTodayCount(co);
+    const burning=todayN>=FIRE_MIN;
+    const heat=getHeat(todayN);
+    const flames=burning?`<span class="col-flames" style="transform:scale(${getFlameScale(todayN).toFixed(2)})"><span class="flame">🔥</span></span>`:'';
+    // 불씨(ember): 8개 이상일 때만 표시 (장식 효과, 모바일에선 CSS로 숨김)
+    const embers=todayN>=8?`<span class="col-ember" style="right:64px;animation-delay:0s"></span><span class="col-ember" style="right:50px;animation-delay:.5s"></span><span class="col-ember" style="right:78px;animation-delay:.95s"></span>`:'';
+    const rightSlot=burning
+      ?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`  // 세기는 불꽃 크기로 표현 (뱃지는 간결하게)
+      :`<span style="margin-left:auto;font-size:10px;opacity:.6">✍ 작성</span>`;
+    const headStyle=burning?`cursor:pointer;--heat:${heat.toFixed(2)}`:`background:${CO_DIM[ci]};color:${c};cursor:pointer`;
+    const countStyle=burning?'':`color:${c}`;
+    // 중첩 템플릿 리터럴 대신 title 문구를 변수로 분리 (가독성)
+    const titleText=burning?`${co} 챌린지 참여하기 · 오늘 ${todayN}개 작성되어 불타오르는 중!`:`${co} 챌린지 참여하기`;
     return `<div>
-      <div class="col-header" style="background:${CO_DIM[ci]};color:${c};cursor:pointer" onclick="openForm('','','${co}')" title="${co} 챌린지 참여하기">
+      <div class="col-header ${burning?'burning':''}" style="${headStyle}" onclick="openForm('','','${co}')" title="${titleText}">
         <div class="co-dot" style="background:${c}"></div>
-        ${co}
-        <span class="col-count" style="color:${c}">${cnt}명</span>
-        <span style="margin-left:auto;font-size:10px;opacity:.6">✍ 작성</span>
+        <span class="co-name">${co}</span>
+        ${flames}
+        <span class="col-count" style="${countStyle}">${cnt}명</span>
+        ${rightSlot}
+        ${embers}
       </div>
       <div class="chain">
         ${roots.length===0
