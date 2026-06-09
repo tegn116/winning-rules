@@ -11,11 +11,12 @@
   --accent:#00b2a9;--accent-d:#008f88;--accent-dim:rgba(0,178,169,.10);
   --navy:#2c3e50;--navy2:#3d5166;--text:#1a2433;--text2:#566070;--text3:#9ba8b5;
   --danger:#e74c3c;--warning:#e67e22;--radius:14px;--radius-sm:9px;
-  /* 4개사 공식 컬러 */
-  --c0:#00BFB6;--c0d:rgba(0,191,182,.12); /* 상상인 — 공식 Mint (R0 G191 B182) */
-  --c1:#273646;--c1d:rgba(39,54,70,.10);  /* 상상인증권 — 공식 Navy */
-  --c2:#1E5FA8;--c2d:rgba(30,95,168,.10); /* 엠아이텍 — 딥블루 */
-  --c3:#2E9E6B;--c3d:rgba(46,158,107,.10);/* 메디카코리아 — 헬스케어 그린 */
+  /* 5개사 공식 컬러 */
+  --c0:#00BFB6;--c0d:rgba(0,191,182,.12);   /* 상상인 */
+  --c1:#273646;--c1d:rgba(39,54,70,.10);    /* 상상인증권 */
+  --c2:#E85D26;--c2d:rgba(232,93,38,.10);   /* 시너지이노베이션 */
+  --c3:#2E9E6B;--c3d:rgba(46,158,107,.10);  /* 메디카코리아 */
+  --c4:#1565C0;--c4d:rgba(21,101,192,.10);  /* 선박기계 */
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -75,7 +76,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .main{padding:28px 32px;background:var(--bg)}
 
 /* 4 COLUMNS */
-.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+.four-col{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start}
 .col-header{display:flex;align-items:center;gap:8px;padding:13px 16px;border-radius:var(--radius-sm);margin-bottom:16px;font-weight:700;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:all .18s}
 .col-header:hover{filter:brightness(.97);box-shadow:0 3px 10px rgba(0,0,0,.1)}
 .col-count{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.6);margin-left:auto;font-weight:600}
@@ -204,6 +205,32 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
+/* D-DAY 카운트다운 */
+.countdown-bar{background:linear-gradient(90deg,var(--navy),#3d5166);color:#fff;padding:8px 32px;display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:16px}
+.countdown-bar.hidden{display:none}
+.cd-label{display:flex;align-items:center;gap:6px;font-weight:600;opacity:.9;font-size:11px;letter-spacing:.04em}
+.cd-timer{display:flex;align-items:center;gap:8px}
+.cd-unit{text-align:center}
+.cd-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;line-height:1;background:rgba(255,255,255,.15);border-radius:6px;padding:3px 8px;min-width:36px;display:inline-block}
+.cd-label-small{font-size:9px;opacity:.7;margin-top:2px;display:block;letter-spacing:.06em}
+.cd-sep{font-size:16px;font-weight:700;opacity:.5;margin-bottom:10px}
+.cd-urgent .cd-num{background:rgba(231,76,60,.4);animation:cdPulse 1s infinite}
+@keyframes cdPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.cd-toggle{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;transition:all .15s}
+.cd-toggle:hover{background:rgba(255,255,255,.25)}
+
+/* 행동강령 필터 */
+.rule-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-wrap:nowrap}
+.rule-filter-bar::-webkit-scrollbar{height:3px}
+.rule-filter-label{font-size:10px;font-weight:700;color:var(--text3);white-space:nowrap;flex-shrink:0;letter-spacing:.08em;text-transform:uppercase;padding-right:6px;border-right:1px solid var(--border);margin-right:2px}
+.rule-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;font-weight:500}
+.rule-chip:hover{border-color:var(--accent);color:var(--accent)}
+.rule-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
+
+/* 만료 카드 */
+.bubble.expired{opacity:.45;filter:grayscale(60%)}
+.bubble.expired:hover{transform:none;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+
 /* 회사 선택 카드 */
 .co-select-row{display:flex;gap:10px;margin-bottom:18px}
 .co-select-card{flex:1;border:2px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .18s;background:#fff}
@@ -304,6 +331,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 </nav>
 
+<!-- COUNTDOWN BAR -->
+<div class="countdown-bar hidden" id="countdown-bar">
+  <div class="cd-label">🏁 챌린지 종료까지</div>
+  <div class="cd-timer" id="cd-timer">
+    <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><span class="cd-label-small">DAYS</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-hours">--</span><span class="cd-label-small">HRS</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-mins">--</span><span class="cd-label-small">MIN</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-secs">--</span><span class="cd-label-small">SEC</span></div>
+  </div>
+  <button class="cd-toggle" onclick="toggleCountdown()" id="cd-toggle-btn">숨기기</button>
+</div>
+
 <!-- HERO -->
 <div class="hero">
   <div class="hero-inner">
@@ -329,14 +371,30 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div class="stat-item"><div class="stat-num" id="s-total" style="color:var(--accent)">0</div><div class="stat-label">전체 참여</div></div>
   <div class="stat-item"><div class="stat-num" id="s-c0" style="color:var(--c0)">0</div><div class="stat-label">상상인</div></div>
   <div class="stat-item"><div class="stat-num" id="s-c1" style="color:var(--c1)">0</div><div class="stat-label">상상인증권</div></div>
-  <div class="stat-item"><div class="stat-num" id="s-c2" style="color:var(--c2)">0</div><div class="stat-label">엠아이텍</div></div>
+  <div class="stat-item"><div class="stat-num" id="s-c2" style="color:var(--c2)">0</div><div class="stat-label">시너지이노베이션</div></div>
   <div class="stat-item"><div class="stat-num" id="s-c3" style="color:var(--c3)">0</div><div class="stat-label">메디카코리아</div></div>
+  <div class="stat-item"><div class="stat-num" id="s-c4" style="color:var(--c4)">0</div><div class="stat-label">선박기계</div></div>
 </div>
 
 <!-- TOP LIKED -->
 <div id="top-liked-bar" style="display:none;background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:12px;overflow-x:auto">
   <span style="font-size:11px;font-weight:700;color:#e74c3c;white-space:nowrap;flex-shrink:0">❤️ 인기 인사이트</span>
   <div id="top-liked-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+</div>
+
+<!-- RULE FILTER BAR -->
+<div class="rule-filter-bar" id="rule-filter-bar">
+  <span class="rule-filter-label">🛡 행동강령</span>
+  <button class="rule-chip active" onclick="filterByRule(null)" id="rule-all">전체</button>
+  <button class="rule-chip" onclick="filterByRule('변화를 이끌거나, 비키거나')">변화를 이끌거나, 비키거나</button>
+  <button class="rule-chip" onclick="filterByRule('완성보다 속도, 성공보다 시도')">완성보다 속도, 성공보다 시도</button>
+  <button class="rule-chip" onclick="filterByRule('배움은 생존을 위한 가장 공격적인 투자')">배움은 생존을 위한 가장 공격적인 투자</button>
+  <button class="rule-chip" onclick="filterByRule('외부 인사이트를 내부 자산으로 연결한다')">외부 인사이트를 내부 자산으로 연결한다</button>
+  <button class="rule-chip" onclick="filterByRule('직급에 상관없이 전원이 의사결정에 참여해야 한다')">직급에 상관없이 전원이 의사결정에 참여해야 한다</button>
+  <button class="rule-chip" onclick="filterByRule('우리 팀을 넘어 우리 회사의 답을 찾는다')">우리 팀을 넘어 우리 회사의 답을 찾는다</button>
+  <button class="rule-chip" onclick="filterByRule('우리는 뒤에서 말하지 않는다')">우리는 뒤에서 말하지 않는다</button>
+  <button class="rule-chip" onclick="filterByRule('동료의 의견을 듣는 것도 팀웍에 포함이다')">동료의 의견을 듣는 것도 팀웍에 포함이다</button>
+  <button class="rule-chip" onclick="filterByRule('다름을 인정하라. 내가 틀릴 수도 있다')">다름을 인정하라. 내가 틀릴 수도 있다</button>
 </div>
 
 <!-- TAG FILTER BAR -->
@@ -386,7 +444,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <input type="hidden" id="f-company">
     <div class="form-row">
       <label class="form-label">소속 회사 *</label>
-      <div class="co-select-row" id="co-select-row">
+      <div class="co-select-row" id="co-select-row" style="flex-wrap:wrap">
         <div class="co-select-card" onclick="selectCompany('상상인',0)" id="co-card-0">
           <div class="co-select-dot" style="background:#00BFB6"></div>
           <div class="co-select-name" style="color:#00BFB6">상상인</div>
@@ -395,13 +453,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <div class="co-select-dot" style="background:#273646"></div>
           <div class="co-select-name" style="color:#273646">상상인증권</div>
         </div>
-        <div class="co-select-card" onclick="selectCompany('엠아이텍',2)" id="co-card-2">
-          <div class="co-select-dot" style="background:#1E5FA8"></div>
-          <div class="co-select-name" style="color:#1E5FA8">엠아이텍</div>
+        <div class="co-select-card" onclick="selectCompany('시너지이노베이션',2)" id="co-card-2">
+          <div class="co-select-dot" style="background:#E85D26"></div>
+          <div class="co-select-name" style="color:#E85D26">시너지이노베이션</div>
         </div>
         <div class="co-select-card" onclick="selectCompany('메디카코리아',3)" id="co-card-3">
           <div class="co-select-dot" style="background:#2E9E6B"></div>
           <div class="co-select-name" style="color:#2E9E6B">메디카코리아</div>
+        </div>
+        <div class="co-select-card" onclick="selectCompany('선박기계',4)" id="co-card-4">
+          <div class="co-select-dot" style="background:#1565C0"></div>
+          <div class="co-select-name" style="color:#1565C0">선박기계</div>
         </div>
       </div>
       <div id="f-already-list" style="margin-top:4px;font-size:11px;color:#e74c3c;display:none"></div>
@@ -447,6 +509,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <input class="form-input" id="f-nominee" placeholder="다음 릴레이 주자 이름" type="text">
       <div class="form-hint">1명만 지목합니다. 지목받은 분은 48시간 내 참여해주세요.</div>
     </div>
+    <div class="form-row">
+      <label class="form-label">지목 동료 이메일 <span style="font-weight:400;color:var(--text3)">— 등록 후 이메일 발송 버튼이 활성화됩니다</span></label>
+      <input class="form-input" id="f-nominee-email" placeholder="nominee@company.com" type="email">
+    </div>
     <div class="form-row" id="f-from-row">
       <label class="form-label">나를 지목한 분</label>
       <input class="form-input" id="f-from" placeholder="지목한 분 이름 (트리 연결에 사용)" type="text">
@@ -459,6 +525,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('form-modal')">취소</button>
       <button class="btn btn-accent" id="f-submit-btn" onclick="submitEntry()">등록 →</button>
+    </div>
+    <div id="f-email-row" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <button class="btn" style="width:100%;justify-content:center;gap:6px;background:var(--bg2)" onclick="sendNomineeEmail()">
+        📧 <strong id="f-nominee-name-label"></strong>님께 릴레이 이메일 발송
+      </button>
+      <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:5px">클릭하면 메일 앱이 열립니다</div>
     </div>
   </div>
 </div>
@@ -474,8 +546,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <select class="form-select" id="e-company">
         <option value="상상인">상상인</option>
         <option value="상상인증권">상상인증권</option>
-        <option value="엠아이텍">엠아이텍</option>
+        <option value="시너지이노베이션">시너지이노베이션</option>
         <option value="메디카코리아">메디카코리아</option>
+        <option value="선박기계">선박기계</option>
       </select>
     </div>
     <div class="form-grid2">
@@ -558,29 +631,36 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         <div class="notify-status ns-no" id="nst-1">미연결</div>
       </div>
       <div class="notify-card">
-        <div class="notify-card-title"><div style="width:8px;height:8px;border-radius:50%;background:#1E5FA8"></div>엠아이텍</div>
-        <select class="notify-input" id="ntype-2">
-          <option value="teams">Microsoft Teams</option>
-          <option value="slack">Slack</option>
-          <option value="kakaowork">카카오워크</option>
-        </select>
+        <div class="notify-card-title"><div style="width:8px;height:8px;border-radius:50%;background:#E85D26"></div>시너지이노베이션</div>
+        <select class="notify-input" id="ntype-2"><option value="teams">Microsoft Teams</option><option value="slack">Slack</option><option value="kakaowork">카카오워크</option></select>
         <input class="notify-input" id="nurl-2" placeholder="Webhook URL" type="text" style="margin-top:5px">
         <div class="notify-status ns-no" id="nst-2">미연결</div>
       </div>
       <div class="notify-card">
         <div class="notify-card-title"><div style="width:8px;height:8px;border-radius:50%;background:#2E9E6B"></div>메디카코리아</div>
-        <select class="notify-input" id="ntype-3">
-          <option value="teams">Microsoft Teams</option>
-          <option value="slack">Slack</option>
-          <option value="kakaowork">카카오워크</option>
-        </select>
+        <select class="notify-input" id="ntype-3"><option value="teams">Microsoft Teams</option><option value="slack">Slack</option><option value="kakaowork">카카오워크</option></select>
         <input class="notify-input" id="nurl-3" placeholder="Webhook URL" type="text" style="margin-top:5px">
         <div class="notify-status ns-no" id="nst-3">미연결</div>
+      </div>
+      <div class="notify-card">
+        <div class="notify-card-title"><div style="width:8px;height:8px;border-radius:50%;background:#1565C0"></div>선박기계</div>
+        <select class="notify-input" id="ntype-4"><option value="teams">Microsoft Teams</option><option value="slack">Slack</option><option value="kakaowork">카카오워크</option></select>
+        <input class="notify-input" id="nurl-4" placeholder="Webhook URL" type="text" style="margin-top:5px">
+        <div class="notify-status ns-no" id="nst-4">미연결</div>
       </div>
     </div>
     <button class="btn btn-accent" style="width:100%;justify-content:center" onclick="saveNotifySettings()">저장 및 테스트</button>
   </div>
 
+  <div class="sg">
+    <div class="sg-title">D-day 카운트다운</div>
+    <div class="sg-label">챌린지 종료일 설정</div>
+    <input class="form-input" id="s-enddate" type="date" style="margin-bottom:8px">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveCountdown()">저장 및 표시</button>
+      <button class="btn" style="flex:1;justify-content:center" onclick="hideCountdown()">숨기기</button>
+    </div>
+  </div>
   <div class="sg">
     <div class="sg-title">관리자 모드</div>
     <div class="sg-label">비밀번호</div>
@@ -642,10 +722,11 @@ document.getElementById('logo-img').src='data:image/png;base64,'+LOGO_B64;
 document.getElementById('char-img').src='data:image/webp;base64,'+CHAR_B64;
 
 // ===== CONFIG =====
-const COMPANIES=['상상인','상상인증권','엠아이텍','메디카코리아'];
-const CO_COLORS=['#00BFB6','#273646','#1E5FA8','#2E9E6B'];
-const CO_DIM=['rgba(0,191,182,.12)','rgba(39,54,70,.10)','rgba(30,95,168,.10)','rgba(46,158,107,.10)'];
-const CO_AVATARS=[['#E0FAF9','#007A72'],['#E8ECF0','#1b2a38'],['#D6E6F5','#154680'],['#D5EFE2','#1d6e4a']];
+const COMPANIES=['상상인','상상인증권','시너지이노베이션','메디카코리아','선박기계'];
+const CO_COLORS=['#00BFB6','#273646','#E85D26','#2E9E6B','#1565C0'];
+const CO_DIM=['rgba(0,191,182,.12)','rgba(39,54,70,.10)','rgba(232,93,38,.10)','rgba(46,158,107,.10)','rgba(21,101,192,.10)'];
+const CO_AVATARS=[['#E0FAF9','#007A72'],['#E8ECF0','#1b2a38'],['#FDE8DF','#9e2d05'],['#D5EFE2','#1d6e4a'],['#D6E4F5','#0d3c7a']];
+const NOMINEE_LIMIT=3;
 const RULES_SHORT={'변화를 이끌거나, 비키거나':'변화를 이끌거나','완성보다 속도, 성공보다 시도':'완성보다 속성','배움은 생존을 위한 가장 공격적인 투자':'배움은 생존투자','외부 인사이트를 내부 자산으로 연결한다':'인사이트→자산','직급에 상관없이 전원이 의사결정에 참여해야 한다':'전원 의사결정','우리 팀을 넘어 우리 회사의 답을 찾는다':'회사의 답을','우리는 뒤에서 말하지 않는다':'뒤에서 말않기','동료의 의견을 듣는 것도 팀웍에 포함이다':'경청도 팀웍','다름을 인정하라. 내가 틀릴 수도 있다':'다름의 인정'};
 const ADMIN_PW='admin1234';
 
@@ -706,13 +787,31 @@ function buildChain(company){
       }
     }
   });
+  // 최신순 정렬 (createdAt 내림차순)
+  roots.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   return roots;
 }
+
+function isExpired(createdAt){return Date.now()>(createdAt+48*3600000);}
 
 function renderBubble(node,ci,depth=0){
   if(node.isPending){
     const t=formatTimer(node.createdAt);
+    const expired=isExpired(node.createdAt);
     const pc=CO_COLORS[ci];
+    if(expired){
+      return `${depth>0?`<div class="connector" style="background:${pc}40;opacity:.3"></div>`:''}
+      <div class="bubble-wrap">
+        <div class="pending-bubble" style="opacity:.35;filter:grayscale(80%);cursor:default">
+          <div class="pending-avatar" style="font-size:16px">⏱</div>
+          <div class="pending-info">
+            <div class="pending-name" style="color:var(--text3);text-decoration:line-through">${node.nomineeName}</div>
+            <div class="pending-from" style="color:var(--text3)">기한 초과 · 릴레이 종료</div>
+          </div>
+          <span style="font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px;border:1px solid var(--border)">만료</span>
+        </div>
+      </div>`;
+    }
     return `<div class="connector" style="background:${pc}40"></div>
     <div class="bubble-wrap">
       <div class="pending-bubble"
@@ -802,20 +901,21 @@ function getFlameScale(count){
 }
 
 function render(){
-  // stats
-  const counts=[0,0,0,0];
+  // stats — 만료 pending 제외
+  const counts=[0,0,0,0,0];
   DATA.forEach(d=>{const i=coIdx(d.company);if(i>=0)counts[i]++;});
   document.getElementById('s-total').textContent=DATA.length;
   counts.forEach((c,i)=>{
     const el=document.getElementById('s-c'+i);
     if(!el)return;
-    const hot=getTodayCount(COMPANIES[i])>=FIRE_MIN; // 오늘 작성량이 점화 기준 이상이면 통계에도 불꽃
+    const hot=getTodayCount(COMPANIES[i])>=FIRE_MIN;
     el.innerHTML=c+(hot?' <span style="font-size:16px;vertical-align:middle;margin-left:2px" title="오늘 활발히 작성 중">🔥</span>':'');
   });
 
-  // 4 columns
+  // columns — 게시글 많은 순 정렬
+  const companySorted=[...COMPANIES.map((co,ci)=>({co,ci,cnt:DATA.filter(d=>d.company===co).length}))].sort((a,b)=>b.cnt-a.cnt);
   const col=document.getElementById('four-col');
-  col.innerHTML=COMPANIES.map((co,ci)=>{
+  col.innerHTML=companySorted.map(({co,ci})=>{
     const roots=buildChain(co);
     const c=CO_COLORS[ci];
     const cnt=DATA.filter(d=>d.company===co).length;
@@ -904,14 +1004,16 @@ function openForm(parentId='',fromName='',preCompany=''){
   document.getElementById('f-is-root').value='';
   document.getElementById('f-from').value=fromName;
   document.getElementById('f-from-row').style.display=parentId?'none':'block';
-  ['f-company','f-name','f-role','f-comment','f-rule','f-nominee','f-pin','f-from'].forEach(id=>{
+  ['f-company','f-name','f-role','f-comment','f-rule','f-nominee','f-nominee-email','f-pin','f-from'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
   // 카드 초기화
-  for(let i=0;i<4;i++){
+  for(let i=0;i<5;i++){
     const card=document.getElementById('co-card-'+i);
     if(card){card.classList.remove('selected');card.style.borderColor='';card.style.background='#fff';}
   }
+  const emailRow=document.getElementById('f-email-row');
+  if(emailRow)emailRow.style.display='none';
   document.querySelector('#form-modal .modal-title').innerHTML='✍ 챌린지 참여';
   const alEl=document.getElementById('f-already-list'); if(alEl)alEl.style.display='none';
   // 회사 컬럼 클릭으로 진입한 경우 자동 선택
@@ -931,8 +1033,9 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function selectCompany(company, ci){
   document.getElementById('f-company').value=company;
   // 카드 스타일 업데이트
-  for(let i=0;i<4;i++){
+  for(let i=0;i<5;i++){
     const card=document.getElementById('co-card-'+i);
+    if(!card)continue;
     if(i===ci){
       card.classList.add('selected');
       card.style.borderColor=CO_COLORS[i];
@@ -1022,8 +1125,11 @@ async function submitEntry(){
 
   // 이미 참여한 사람 지목 불가 체크
   if(nominee){
-    const alreadyNominated = DATA.find(d => d.company === company && d.name.trim() === nominee.trim());
-    if(alreadyNominated){showToast('⚠️ '+nominee+'님은 이미 참여하셨습니다. 다른 분을 지목해주세요.','error');return;}
+    const alreadyParticipated = DATA.find(d => d.company === company && d.name.trim() === nominee.trim());
+    if(alreadyParticipated){showToast('⚠️ '+nominee+'님은 이미 참여하셨습니다. 다른 분을 지목해주세요.','error');return;}
+    // 지목 횟수 3회 제한
+    const nomineeCount=DATA.filter(d=>d.nomineeName&&d.nomineeName.trim()===nominee.trim()&&d.company===company).length;
+    if(nomineeCount>=NOMINEE_LIMIT){showToast('⚠️ '+nominee+'님은 이미 3회 지목되었습니다. 다른 분을 지목해주세요.','error');return;}
   }
   // 부모 찾기
   let resolvedParentId=parentId||'';
@@ -1052,6 +1158,12 @@ async function submitEntry(){
     if(WEBHOOK)sendTeamsAlert(entry);
     document.getElementById('f-pin').value='';
     showToast('🎉 등록 완료! '+nominee+'님께 릴레이가 이어집니다.','success');
+    const nomineeEmail=document.getElementById('f-nominee-email')?.value.trim();
+    if(nomineeEmail&&nominee){
+      document.getElementById('f-email-row').style.display='block';
+      document.getElementById('f-nominee-name-label').textContent=nominee;
+      window._lastNominee={name:nominee,email:nomineeEmail,from:name,company,comment,rule};
+    }
   }catch(e){showToast('❌ 저장 실패: '+e.message,'error');}
   finally{setSyncing(false);}
 }
@@ -1285,7 +1397,7 @@ let NOTIFY_SETTINGS = JSON.parse(localStorage.getItem('wr_notify')||'[]');
 
 function saveNotifySettings(){
   NOTIFY_SETTINGS=[];
-  for(let i=0;i<4;i++){
+  for(let i=0;i<5;i++){
     const type=document.getElementById('ntype-'+i)?.value||'teams';
     const url=document.getElementById('nurl-'+i)?.value.trim()||'';
     NOTIFY_SETTINGS.push({type,url});
@@ -1309,7 +1421,7 @@ function updateNotifyStatus(i,url){
 function loadNotifySettings(){
   try{
     NOTIFY_SETTINGS=JSON.parse(localStorage.getItem('wr_notify')||'[]');
-    for(let i=0;i<4;i++){
+    for(let i=0;i<5;i++){
       const s=NOTIFY_SETTINGS[i];
       if(!s)continue;
       const typeEl=document.getElementById('ntype-'+i);
@@ -1449,8 +1561,80 @@ window.addEventListener('click',e=>{
 // 3분마다 자동 새로고침 (탭 활성 상태일 때만)
 setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},180000);
 
+// ===== 이메일 발송 =====
+function sendNomineeEmail(){
+  const d=window._lastNominee;if(!d)return;
+  const subj=encodeURIComponent('[Winning Rules 챌린지] '+d.from+'님이 '+d.company+' 릴레이를 이어드립니다!');
+  const body=encodeURIComponent(d.from+'님이 Winning Rules 챌린지를 이어드립니다 🏆\n\n━━━━━━━━━━━━\n💬 인사이트: '+d.comment+'\n🛡 행동강령: '+d.rule+'\n━━━━━━━━━━━━\n\n'+d.name+'님, 48시간 내에 참여해 주세요!\n참여 링크: '+window.location.href);
+  window.location.href='mailto:'+d.email+'?subject='+subj+'&body='+body;
+}
+
+// ===== 행동강령 필터 =====
+let ACTIVE_RULE=null;
+function filterByRule(rule){
+  ACTIVE_RULE=rule;
+  document.querySelectorAll('.rule-chip').forEach(c=>c.classList.remove('active'));
+  if(!rule){document.getElementById('rule-all')?.classList.add('active');}
+  else{document.querySelectorAll('.rule-chip').forEach(c=>{if(c.getAttribute('onclick')&&c.getAttribute('onclick').includes(rule))c.classList.add('active');});}
+  document.querySelectorAll('.bubble').forEach(b=>{
+    const ruleEl=b.querySelector('.bubble-rule');
+    if(!ACTIVE_RULE){b.style.opacity='';b.style.filter='';}
+    else if(ruleEl&&ruleEl.textContent.includes(RULES_SHORT[ACTIVE_RULE]||ACTIVE_RULE)){b.style.opacity='1';b.style.filter='';}
+    else{b.style.opacity='0.2';}
+  });
+}
+
+// ===== D-DAY 카운트다운 =====
+let cdInterval=null;
+function saveCountdown(){
+  const dateVal=document.getElementById('s-enddate').value;
+  if(!dateVal){showToast('⚠️ 종료일을 선택해주세요','error');return;}
+  const endDate=new Date(dateVal+'T23:59:59').getTime();
+  localStorage.setItem('wr_enddate',endDate);
+  localStorage.setItem('wr_countdown_on','1');
+  startCountdown(endDate);
+  showToast('✅ 카운트다운 시작!','success');
+}
+function hideCountdown(){
+  localStorage.setItem('wr_countdown_on','0');
+  document.getElementById('countdown-bar').classList.add('hidden');
+  if(cdInterval)clearInterval(cdInterval);
+}
+function toggleCountdown(){
+  const bar=document.getElementById('countdown-bar');
+  const hidden=bar.classList.toggle('hidden');
+  document.getElementById('cd-toggle-btn').textContent=hidden?'보이기':'숨기기';
+}
+function startCountdown(endTime){
+  const bar=document.getElementById('countdown-bar');
+  bar.classList.remove('hidden');
+  document.getElementById('cd-toggle-btn').textContent='숨기기';
+  if(cdInterval)clearInterval(cdInterval);
+  function tick(){
+    const diff=endTime-Date.now();
+    if(diff<=0){['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id=>document.getElementById(id).textContent='00');clearInterval(cdInterval);return;}
+    const days=Math.floor(diff/86400000),hours=Math.floor((diff%86400000)/3600000),mins=Math.floor((diff%3600000)/60000),secs=Math.floor((diff%60000)/1000);
+    document.getElementById('cd-days').textContent=String(days).padStart(2,'0');
+    document.getElementById('cd-hours').textContent=String(hours).padStart(2,'0');
+    document.getElementById('cd-mins').textContent=String(mins).padStart(2,'0');
+    document.getElementById('cd-secs').textContent=String(secs).padStart(2,'0');
+    const timer=document.getElementById('cd-timer');
+    if(diff<86400000)timer.classList.add('cd-urgent');else timer.classList.remove('cd-urgent');
+  }
+  tick();cdInterval=setInterval(tick,1000);
+}
+function initCountdown(){
+  const on=localStorage.getItem('wr_countdown_on'),endDate=localStorage.getItem('wr_enddate');
+  if(on==='1'&&endDate){
+    startCountdown(Number(endDate));
+    const el=document.getElementById('s-enddate');
+    if(el)el.value=new Date(Number(endDate)).toISOString().slice(0,10);
+  }
+}
+
 // ===== INIT =====
 loadNotifySettings();
+initCountdown();
 if(GAS_URL){loadFromSheets();}else{showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');render();}
 </script>
 </body>
