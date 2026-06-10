@@ -544,7 +544,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="form-row">
       <label class="form-label">지목할 동료 *</label>
-      <input class="form-input" id="f-nominee" placeholder="다음 릴레이 주자 이름" type="text">
+      <input class="form-input" id="f-nominee" placeholder="다음 릴레이 주자 이름" type="text" oninput="checkNomineeConflict()">
       <div class="form-hint">1명만 지목합니다. 지목받은 분은 48시간 내 참여해주세요.</div>
     </div>
     <div class="form-row">
@@ -1093,12 +1093,29 @@ function selectCompany(company, ci){
   // 이미 참여한 분 표시
   const participated=DATA.filter(d=>d.company===company).map(d=>d.name);
   const el=document.getElementById('f-already-list');
-  if(participated.length){
-    el.style.display='block';
-    el.innerHTML='⛔ 이미 참여한 분이 있습니다. 지목 시 다른 분을 선택해주세요.';
-  } else { el.style.display='none'; }
+  // 회사 선택 시에는 숨김 — 지목칸 입력할 때만 표시
+  el.style.display='none';
 }
 function onCompanyChange(){ /* legacy - replaced by selectCompany */ }
+
+function checkNomineeConflict(){
+  const company=document.getElementById('f-company').value;
+  const nominee=document.getElementById('f-nominee').value.trim();
+  const el=document.getElementById('f-already-list');
+  if(!el)return;
+  if(!company||!nominee){el.style.display='none';return;}
+  const alreadyIn=DATA.find(d=>d.company===company&&d.name.trim()===nominee);
+  const overLimit=DATA.filter(d=>d.nomineeName&&d.nomineeName.trim()===nominee&&d.company===company).length>=NOMINEE_LIMIT;
+  if(alreadyIn){
+    el.style.display='block';
+    el.innerHTML='⛔ 이미 참여한 분입니다. 다른 분을 지목해주세요.';
+  } else if(overLimit){
+    el.style.display='block';
+    el.innerHTML='⛔ 이미 3회 지목된 분입니다. 다른 분을 지목해주세요.';
+  } else {
+    el.style.display='none';
+  }
+}
 
 // ===== LIKES =====
 function getSessionId(){
