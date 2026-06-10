@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Winning Rules Challenge — 상상인 그룹</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -32,7 +32,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{width:8px;height:8px;border-radius:50%;border:2px solid var(--accent);border-top-color:transparent;animation:spin .7s linear infinite}
 .nav-actions{display:flex;gap:8px;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:#fff;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:#fff;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
 .btn-accent:hover{background:var(--accent-d);color:#fff;border-color:var(--accent-d)}
@@ -100,8 +100,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .confirm-modal{background:#fff;border-radius:var(--radius);padding:24px;width:100%;max-width:360px;transform:translateY(12px);transition:transform .2s;box-shadow:0 20px 60px rgba(0,0,0,.15)}
 .modal-overlay.open .confirm-modal{transform:translateY(0)}
 /* 말풍선 꼬리 */
-.bubble::after{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #fff}
-.bubble::before{content:'';position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:11px solid var(--border2)}
+.bubble::after{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid #fff}
+.bubble::before{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:11px solid var(--border2)}
 .bubble-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .bubble-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace;border:2px solid}
 .bubble-info{flex:1;min-width:0}
@@ -118,7 +118,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .connector{width:2px;height:24px;background:linear-gradient(180deg,var(--border2),var(--border2));margin:0 auto}
 
 /* PENDING BUBBLE */
-.pending-bubble{width:100%;background:var(--bg2);border:1.5px dashed var(--border2);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:all .2s}
+.pending-bubble{width:100%;background:var(--bg2);border:1.5px dashed var(--border2);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .pending-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .pending-info{flex:1;min-width:0}
 .pending-name{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -188,19 +188,48 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .like-btn.pop .heart{animation:heartPop .35s ease forwards}
 
 /* FAB */
-.fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(0,178,169,.4);display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:40}
+.fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(0,178,169,.4);display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:40;-webkit-tap-highlight-color:transparent}
 .fab:hover{background:var(--accent-d);transform:scale(1.08)}
+.fab:active{transform:scale(.95)}
 
+@media(max-width:1100px){
+  .four-col{grid-template-columns:repeat(3,1fr)}
+}
 @media(max-width:900px){
   .four-col{grid-template-columns:repeat(2,1fr)}
   .main{padding:20px 16px}
   .nav{padding:12px 16px}
-  .hero{padding:20px 16px}
-  .company-tabs{padding:0 16px}
+  .hero-inner{flex-direction:column}
+  .hero-left{padding:24px 20px;border-right:none;border-bottom:1px solid var(--border)}
+  .hero-right{width:100%;padding:16px 20px;justify-content:flex-start}
+  .hero-char img{width:140px}
+  .hero-sub{white-space:normal!important}
+  .rule-filter-bar{padding:8px 16px}
+  .tag-filter-bar{padding:8px 16px}
+  .countdown-bar{padding:8px 16px;flex-wrap:wrap;gap:8px}
 }
-@media(max-width:540px){
-  .four-col{grid-template-columns:1fr}
+@media(max-width:640px){
+  .four-col{grid-template-columns:repeat(2,1fr);gap:10px}
   .settings-panel{width:100%}
+  .hero-pills{gap:5px}
+  .hero-pill{font-size:10px;padding:4px 9px}
+  .modal{padding:18px}
+  .co-select-row{gap:6px}
+  .co-select-card{padding:10px 5px}
+  .co-select-name{font-size:10px}
+  .nav-actions .btn:not(.btn-accent){display:none}
+  .nav-title{font-size:12px}
+  .cd-num{font-size:16px;padding:2px 6px;min-width:28px}
+}
+@media(max-width:420px){
+  .four-col{grid-template-columns:1fr}
+  .bubble{padding:12px}
+  .bubble-avatar{width:28px;height:28px;font-size:10px}
+  .action-btn{width:24px;height:24px;font-size:11px}
+  .hero h1{font-size:22px}
+  .stats-bar{flex-wrap:wrap}
+  .stat-item{flex:0 0 50%;border-bottom:1px solid var(--border)}
+  .stat-item:nth-child(even){border-right:none}
 }
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -404,6 +433,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div id="tag-chips"></div>
 </div>
 
+<!-- RULE VIEW -->
+<div class="tag-view" id="rule-view-panel">
+  <div class="tag-view-title">
+    <span id="rule-view-title-text"></span>
+    <button class="btn" onclick="filterByRule(null)" style="font-size:12px;padding:5px 12px">✕ 전체 보기</button>
+  </div>
+  <div class="tag-cards" id="rule-view-cards"></div>
+</div>
+
 <!-- TAG VIEW -->
 <div class="tag-view" id="tag-view-panel">
   <div class="tag-view-title">
@@ -590,7 +628,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 <!-- SETTINGS -->
 <div class="settings-panel" id="settings-panel">
-  <button class="settings-close" onclick="toggleSettings()">✕</button>
+  <button class="settings-close" onclick="document.getElementById('settings-panel').classList.remove('open')">✕</button>
   <div class="settings-title">설정</div>
 
   <div class="sg">
@@ -1333,16 +1371,18 @@ function renderTopLiked(){
 }
 
 function openSettingsAuth(){
-  // 이미 관리자면 바로 열기
+  // 이미 관리자면 바로 열기 (setTimeout으로 click outside 이벤트보다 늦게 실행)
   if(IS_ADMIN){
-    document.getElementById('settings-panel').classList.add('open');
+    setTimeout(()=>document.getElementById('settings-panel').classList.add('open'),10);
     return;
   }
   // 비번 모달 열기
   document.getElementById('auth-pw').value='';
   document.getElementById('auth-error').style.display='none';
-  document.getElementById('settings-auth-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('auth-pw').focus(),200);
+  setTimeout(()=>{
+    document.getElementById('settings-auth-modal').classList.add('open');
+    setTimeout(()=>document.getElementById('auth-pw').focus(),200);
+  },10);
 }
 
 function submitSettingsAuth(){
@@ -1492,20 +1532,25 @@ async function testWebhook(){ /* legacy */ }
 
 // ===== DEMO =====
 async function loadDemo(){
-  if(!confirm('샘플 데이터를 로드할까요? 기존 데이터는 삭제됩니다.'))return;
-  const now=Date.now(),h=3600000;
+  const now=Date.now(),h=3600000,uid=Date.now();
   const samples=[
-    {id:'d1',company:'상상인',name:'유○○ 대표',role:'대표이사',comment:'작년 글로벌 핀테크 컨퍼런스에서 들은 한 마디가 우리 전략을 바꿨다. 외부의 자극을 내부의 언어로 번역하는 것이 리더의 일이다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['리더십','전략'],nomineeId:'',nomineeName:'이○○ 본부장',parentId:'',createdAt:now-72*h},
-    {id:'d2',company:'상상인증권',name:'김○○ 대표',role:'대표이사',comment:'고객이 침묵할 때 가장 많은 것을 말하고 있다. 데이터 뒤에 있는 행동을 읽는 것이 증권업의 핵심이다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['고객','데이터'],nomineeId:'',nomineeName:'박○○ 본부장',parentId:'',createdAt:now-70*h},
-    {id:'d3',company:'엠아이텍',name:'이○○ 대표',role:'대표이사',comment:'실리콘밸리 방문에서 배운 것 — 완성된 제품보다 배우는 과정이 경쟁력이다. 우리도 더 자주 시도해야 한다.',rule:'완성보다 속도, 성공보다 시도',hashtags:['혁신','제품'],nomineeId:'',nomineeName:'최○○ 이사',parentId:'',createdAt:now-68*h},
-    {id:'d4',company:'메디카코리아',name:'정○○ 대표',role:'대표이사',comment:'의료 현장에서 만난 의사의 한마디가 우리 솔루션 방향을 바꿨다. 현장의 목소리가 최고의 인사이트다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['현장','의료'],nomineeId:'',nomineeName:'강○○ 팀장',parentId:'',createdAt:now-66*h},
-    {id:'d5',company:'상상인',name:'이○○ 본부장',role:'영업본부',comment:'고객 미팅에서 우연히 들은 경쟁사 피드백을 팀 전체와 공유했더니 다음 주 제안서가 완전히 달라졌다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['영업','공유'],nomineeId:'',nomineeName:'최○○ 팀장',parentId:'d1',createdAt:now-48*h},
+    {id:'dm'+uid+'_1',company:'상상인',name:'유○○ 대표',role:'대표이사',comment:'작년 글로벌 핀테크 컨퍼런스에서 들은 한 마디가 우리 전략을 바꿨다. 외부의 자극을 내부의 언어로 번역하는 것이 리더의 일이다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['리더십','전략'],nomineeId:'',nomineeName:'이○○ 본부장',parentId:'',createdAt:now-2*h,pinHash:''},
+    {id:'dm'+uid+'_2',company:'상상인증권',name:'김○○ 대표',role:'대표이사',comment:'고객이 침묵할 때 가장 많은 것을 말하고 있다. 데이터 뒤에 있는 행동을 읽는 것이 증권업의 핵심이다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['고객','데이터'],nomineeId:'',nomineeName:'박○○ 본부장',parentId:'',createdAt:now-2*h,pinHash:''},
+    {id:'dm'+uid+'_3',company:'시너지이노베이션',name:'이○○ 대표',role:'대표이사',comment:'실리콘밸리 방문에서 배운 것 — 완성된 제품보다 배우는 과정이 경쟁력이다. 우리도 더 자주 시도해야 한다.',rule:'완성보다 속도, 성공보다 시도',hashtags:['혁신','제품'],nomineeId:'',nomineeName:'최○○ 이사',parentId:'',createdAt:now-2*h,pinHash:''},
+    {id:'dm'+uid+'_4',company:'메디카코리아',name:'정○○ 대표',role:'대표이사',comment:'의료 현장에서 만난 의사의 한마디가 우리 솔루션 방향을 바꿨다. 현장의 목소리가 최고의 인사이트다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['현장','의료'],nomineeId:'',nomineeName:'강○○ 팀장',parentId:'',createdAt:now-2*h,pinHash:''},
+    {id:'dm'+uid+'_5',company:'선박기계',name:'박○○ 대표',role:'대표이사',comment:'현장 엔지니어들의 목소리가 우리 제품 방향을 완전히 바꿨다. 듣는 조직이 이기는 조직이다.',rule:'동료의 의견을 듣는 것도 팀웍에 포함이다',hashtags:['현장','엔지니어링'],nomineeId:'',nomineeName:'최○○ 팀장',parentId:'',createdAt:now-2*h,pinHash:''},
+    {id:'dm'+uid+'_6',company:'상상인',name:'이○○ 본부장',role:'영업본부',comment:'고객 미팅에서 우연히 들은 경쟁사 피드백을 팀 전체와 공유했더니 다음 주 제안서가 완전히 달라졌다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['영업','공유'],nomineeId:'',nomineeName:'최○○ 팀장',parentId:'dm'+uid+'_1',createdAt:now-1*h,pinHash:''},
+    {id:'dm'+uid+'_7',company:'상상인증권',name:'박○○ 본부장',role:'리테일본부',comment:'실패를 숨기는 조직은 성장을 숨기는 거라는 말이 우리 팀 회의 문화를 바꿨다.',rule:'완성보다 속도, 성공보다 시도',hashtags:['팀문화','실패'],nomineeId:'',nomineeName:'이○○ 팀장',parentId:'dm'+uid+'_2',createdAt:now-1*h,pinHash:''},
+    {id:'dm'+uid+'_8',company:'시너지이노베이션',name:'최○○ 이사',role:'개발본부',comment:'코드 리뷰를 하다 보면 내가 틀릴 수 있다는 걸 매일 깨닫는다. 그게 성장의 시작이다.',rule:'다름을 인정하라. 내가 틀릴 수도 있다',hashtags:['개발','성장'],nomineeId:'',nomineeName:'강○○ 개발자',parentId:'dm'+uid+'_3',createdAt:now-1*h,pinHash:''},
+    {id:'dm'+uid+'_9',company:'메디카코리아',name:'강○○ 팀장',role:'영업팀',comment:'현장 의료진의 목소리를 듣지 않고 만든 제품은 반드시 실패한다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['현장','의료'],nomineeId:'',nomineeName:'류○○ 대리',parentId:'dm'+uid+'_4',createdAt:now-1*h,pinHash:''},
+    {id:'dm'+uid+'_10',company:'선박기계',name:'최○○ 팀장',role:'기술팀',comment:'변화를 두려워하는 게 아니라 변화를 기다리는 게 더 위험하다는 걸 이번 프로젝트에서 체감했다.',rule:'변화를 이끌거나, 비키거나',hashtags:['기술','혁신'],nomineeId:'',nomineeName:'박○○ 대리',parentId:'dm'+uid+'_5',createdAt:now-1*h,pinHash:''},
   ];
   setSyncing(true);
   try{
-    await apiCall('clear');
     for(const s of samples)await apiCall('add',{entry:s});
-    DATA=[...samples];render();showToast('📦 샘플 데이터 로드 완료','success');
+    DATA=[...DATA,...samples];
+    render();
+    showToast(`📦 샘플 ${samples.length}개 추가! 총 ${DATA.length}명 참여 중`,'success');
   }catch(e){showToast('❌ 실패: '+e.message,'error');}
   finally{setSyncing(false);}
 }
@@ -1550,7 +1595,7 @@ function showToast(msg,type='success'){
 // ===== CLICK OUTSIDE =====
 window.addEventListener('click',e=>{
   const sp=document.getElementById('settings-panel');
-  if(sp.classList.contains('open')&&!sp.contains(e.target)&&!e.target.closest('[onclick="toggleSettings()"]'))sp.classList.remove('open');
+  if(sp.classList.contains('open')&&!sp.contains(e.target)&&!e.target.closest('[onclick*="Settings"]')&&!e.target.closest('[onclick*="settings"]'))sp.classList.remove('open');
   ['form-modal','edit-modal','settings-auth-modal','delete-modal'].forEach(id=>{
     const m=document.getElementById(id);
     if(m&&m.classList.contains('open')&&e.target===m)m.classList.remove('open');
@@ -1573,15 +1618,48 @@ function sendNomineeEmail(){
 let ACTIVE_RULE=null;
 function filterByRule(rule){
   ACTIVE_RULE=rule;
+  // 칩 active 상태
   document.querySelectorAll('.rule-chip').forEach(c=>c.classList.remove('active'));
-  if(!rule){document.getElementById('rule-all')?.classList.add('active');}
-  else{document.querySelectorAll('.rule-chip').forEach(c=>{if(c.getAttribute('onclick')&&c.getAttribute('onclick').includes(rule))c.classList.add('active');});}
-  document.querySelectorAll('.bubble').forEach(b=>{
-    const ruleEl=b.querySelector('.bubble-rule');
-    if(!ACTIVE_RULE){b.style.opacity='';b.style.filter='';}
-    else if(ruleEl&&ruleEl.textContent.includes(RULES_SHORT[ACTIVE_RULE]||ACTIVE_RULE)){b.style.opacity='1';b.style.filter='';}
-    else{b.style.opacity='0.2';}
+  if(!rule){
+    document.getElementById('rule-all')?.classList.add('active');
+    // 전체 보기 — 태그뷰처럼 main으로 돌아감
+    document.getElementById('rule-view-panel').classList.remove('open');
+    document.querySelector('.main').style.display='block';
+    return;
+  }
+  document.querySelectorAll('.rule-chip').forEach(c=>{
+    if(c.getAttribute('onclick')&&c.getAttribute('onclick').includes(rule.replace(/'/g,"\'")))c.classList.add('active');
   });
+  // 해당 행동강령 카드 모아보기 뷰
+  const panel=document.getElementById('rule-view-panel');
+  panel.classList.add('open');
+  document.querySelector('.main').style.display='none';
+  const matched=DATA.filter(d=>d.rule===rule);
+  document.getElementById('rule-view-title-text').innerHTML=
+    `<span style="background:var(--navy);color:#fff;padding:3px 12px;border-radius:20px;font-size:14px">🛡 ${rule}</span>`;
+  const cards=document.getElementById('rule-view-cards');
+  if(!cards)return;
+  if(matched.length===0){
+    cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">아직 이 행동강령으로 등록된 인사이트가 없어요</div>';
+    return;
+  }
+  cards.innerHTML=matched.map(d=>{
+    const ci=COMPANIES.indexOf(d.company);
+    const c=CO_COLORS[ci>=0?ci:0];
+    const cdim=CO_DIM[ci>=0?ci:0];
+    const tags=(d.hashtags||[]).map(t=>`<span class="tag">#${t}</span>`).join('');
+    return `<div style="background:#fff;border:1.5px solid ${c}30;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:${cdim};color:${c};border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${d.name.slice(0,2)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--navy)">${d.name}</div>
+          <div style="font-size:11px;color:var(--text3)">${d.company} · ${d.role||''}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;line-height:1.75;color:var(--text);border-left:3px solid ${c};padding:8px 12px;background:${cdim};border-radius:0 6px 6px 0;margin-bottom:10px">${d.comment||''}</div>
+      ${tags?`<div style="display:flex;flex-wrap:wrap;gap:4px">${tags}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
 // ===== D-DAY 카운트다운 =====
