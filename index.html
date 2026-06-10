@@ -739,7 +739,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div class="form-row">
       <label class="form-label">비밀번호</label>
       <input class="form-input" id="auth-pw" type="password" placeholder="비밀번호 입력"
-        style="font-size:16px;letter-spacing:4px"
         onkeydown="if(event.key==='Enter')submitSettingsAuth()">
     </div>
     <div id="auth-error" style="font-size:12px;color:#e74c3c;display:none;margin-top:-8px;margin-bottom:8px">
@@ -1096,7 +1095,7 @@ function selectCompany(company, ci){
   const el=document.getElementById('f-already-list');
   if(participated.length){
     el.style.display='block';
-    el.innerHTML='⛔ 이미 참여한 분 (지목 불가): '+participated.map(n=>`<strong>${n}</strong>`).join(', ');
+    el.innerHTML='⛔ 이미 참여한 분이 있습니다. 지목 시 다른 분을 선택해주세요.';
   } else { el.style.display='none'; }
 }
 function onCompanyChange(){ /* legacy - replaced by selectCompany */ }
