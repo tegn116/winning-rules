@@ -414,7 +414,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <!-- RULE FILTER BAR -->
 <div class="rule-filter-bar" id="rule-filter-bar">
   <span class="rule-filter-label">🛡 행동강령</span>
-  <button class="rule-chip active" onclick="filterByRule(null)" id="rule-all">전체</button>
+  <button class="rule-chip active" onclick="clearAllFilters()" id="rule-all">전체</button>
   <button class="rule-chip" onclick="filterByRule('변화를 이끌거나, 비키거나')">변화를 이끌거나, 비키거나</button>
   <button class="rule-chip" onclick="filterByRule('완성보다 속도, 성공보다 시도')">완성보다 속도, 성공보다 시도</button>
   <button class="rule-chip" onclick="filterByRule('배움은 생존을 위한 가장 공격적인 투자')">배움은 생존을 위한 가장 공격적인 투자</button>
@@ -429,26 +429,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <!-- TAG FILTER BAR -->
 <div class="tag-filter-bar" id="tag-filter-bar" style="display:none">
   <span class="tag-filter-label">🏷 태그</span>
-  <button class="tag-filter-chip active" onclick="filterByTag(null)" id="tag-all">전체</button>
+  <button class="tag-filter-chip active" onclick="clearAllFilters()" id="tag-all">전체</button>
   <div id="tag-chips"></div>
 </div>
 
-<!-- RULE VIEW -->
-<div class="tag-view" id="rule-view-panel">
-  <div class="tag-view-title">
-    <span id="rule-view-title-text"></span>
-    <button class="btn" onclick="filterByRule(null)" style="font-size:12px;padding:5px 12px">✕ 전체 보기</button>
+<!-- COMBINED FILTER VIEW -->
+<div class="tag-view" id="filter-view-panel">
+  <div class="tag-view-title" style="flex-wrap:wrap;gap:8px">
+    <div id="filter-view-badges" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex:1"></div>
+    <button class="btn" onclick="clearAllFilters()" style="font-size:12px;padding:5px 12px">✕ 필터 해제</button>
   </div>
-  <div class="tag-cards" id="rule-view-cards"></div>
-</div>
-
-<!-- TAG VIEW -->
-<div class="tag-view" id="tag-view-panel">
-  <div class="tag-view-title">
-    <span id="tag-view-title-text"></span>
-    <button class="btn" onclick="filterByTag(null)" style="font-size:12px;padding:5px 12px">✕ 전체 보기</button>
-  </div>
-  <div class="tag-cards" id="tag-view-cards"></div>
+  <div id="filter-result-count" style="font-size:12px;color:var(--text3);margin-bottom:12px"></div>
+  <div class="tag-cards" id="filter-view-cards"></div>
 </div>
 
 <!-- MAIN -->
@@ -790,7 +782,7 @@ function setSyncing(v){
 }
 async function loadFromSheets(){
   setSyncing(true);
-  try{DATA=await apiCall('getAll');render();}
+  try{DATA=await apiCall('getAll');invalidateCache();render();}
   catch(e){showToast('⚠️ 로드 실패: '+e.message,'error');render();}
   finally{setSyncing(false);}
 }
@@ -942,8 +934,70 @@ function getFlameScale(count){
   return 1+getHeat(count)*0.9;
 }
 
-function render(){
-  // stats — 만료 pending 제외
+// ===== 캐시 & dirty 추적 =====
+let _cache = {
+  chainHTML: {},      // 회사별 체인 HTML 캐시
+  dataHash: {},       // 회사별 데이터 해시 (변경 감지)
+  sortOrder: [],      // 마지막 정렬 순서
+};
+
+function _hashCompany(co){
+  // 회사 데이터의 간단한 해시 (id+createdAt 조합)
+  return DATA.filter(d=>d.company===co).map(d=>d.id+d.createdAt+(d.likes||[]).length).join('|');
+}
+
+function _isDirty(co){
+  const h=_hashCompany(co);
+  if(_cache.dataHash[co]===h)return false;
+  _cache.dataHash[co]=h;
+  return true;
+}
+
+function invalidateCache(co){
+  // 특정 회사만 캐시 무효화 (등록/수정/삭제 시)
+  if(co)delete _cache.dataHash[co];
+  else _cache.dataHash={};
+}
+
+function renderColumn(co, ci){
+  // 캐시 hit 시 기존 HTML 재사용
+  if(!_isDirty(co) && _cache.chainHTML[co]) return _cache.chainHTML[co];
+
+  const roots=buildChain(co);
+  const c=CO_COLORS[ci];
+  const cnt=DATA.filter(d=>d.company===co).length;
+  const todayN=getTodayCount(co);
+  const burning=todayN>=FIRE_MIN;
+  const heat=getHeat(todayN);
+  const flames=burning?`<span class="col-flames" style="transform:scale(${getFlameScale(todayN).toFixed(2)})"><span class="flame">🔥</span></span>`:'';
+  const embers=todayN>=8?`<span class="col-ember" style="right:64px;animation-delay:0s"></span><span class="col-ember" style="right:50px;animation-delay:.5s"></span><span class="col-ember" style="right:78px;animation-delay:.95s"></span>`:'';
+  const rightSlot=burning?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`:`<span style="margin-left:auto;font-size:10px;opacity:.6">✍ 작성</span>`;
+  const headStyle=burning?`cursor:pointer;--heat:${heat.toFixed(2)}`:`background:${CO_DIM[ci]};color:${c};cursor:pointer`;
+  const countStyle=burning?'':`color:${c}`;
+  const titleText=burning?`${co} 챌린지 참여하기 · 오늘 ${todayN}개 작성되어 불타오르는 중!`:`${co} 챌린지 참여하기`;
+
+  const html=`<div>
+    <div class="col-header ${burning?'burning':''}" style="${headStyle}" onclick="openForm('','','${co}')" title="${titleText}">
+      <div class="co-dot" style="background:${c}"></div>
+      <span class="co-name">${co}</span>
+      ${flames}
+      <span class="col-count" style="${countStyle}">${cnt}명</span>
+      ${rightSlot}
+      ${embers}
+    </div>
+    <div class="chain" id="chain-${co.replace(/\s/g,'-')}">
+      ${roots.length===0
+        ?`<div class="empty-col"><div class="e-icon">🌱</div><div class="e-text">아직 참여가 없습니다</div></div>`
+        :roots.map(r=>renderBubble(r,ci,0)).join('')}
+    </div>
+  </div>`;
+
+  _cache.chainHTML[co]=html;
+  return html;
+}
+
+function render(dirtyCompany=null){
+  // 1. 통계 업데이트 (항상 빠름)
   const counts=[0,0,0,0,0];
   DATA.forEach(d=>{const i=coIdx(d.company);if(i>=0)counts[i]++;});
   document.getElementById('s-total').textContent=DATA.length;
@@ -954,54 +1008,43 @@ function render(){
     el.innerHTML=c+(hot?' <span style="font-size:16px;vertical-align:middle;margin-left:2px" title="오늘 활발히 작성 중">🔥</span>':'');
   });
 
-  // columns — 게시글 많은 순 정렬
+  // 2. 정렬 (게시글 많은 순)
   const companySorted=[...COMPANIES.map((co,ci)=>({co,ci,cnt:DATA.filter(d=>d.company===co).length}))].sort((a,b)=>b.cnt-a.cnt);
+  const newOrder=companySorted.map(x=>x.co).join(',');
   const col=document.getElementById('four-col');
-  col.innerHTML=companySorted.map(({co,ci})=>{
-    const roots=buildChain(co);
-    const c=CO_COLORS[ci];
-    const cnt=DATA.filter(d=>d.company===co).length;
-    // 🔥 오늘 작성량 기반 불꽃 계산
-    const todayN=getTodayCount(co);
-    const burning=todayN>=FIRE_MIN;
-    const heat=getHeat(todayN);
-    const flames=burning?`<span class="col-flames" style="transform:scale(${getFlameScale(todayN).toFixed(2)})"><span class="flame">🔥</span></span>`:'';
-    // 불씨(ember): 8개 이상일 때만 표시 (장식 효과, 모바일에선 CSS로 숨김)
-    const embers=todayN>=8?`<span class="col-ember" style="right:64px;animation-delay:0s"></span><span class="col-ember" style="right:50px;animation-delay:.5s"></span><span class="col-ember" style="right:78px;animation-delay:.95s"></span>`:'';
-    const rightSlot=burning
-      ?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`  // 세기는 불꽃 크기로 표현 (뱃지는 간결하게)
-      :`<span style="margin-left:auto;font-size:10px;opacity:.6">✍ 작성</span>`;
-    const headStyle=burning?`cursor:pointer;--heat:${heat.toFixed(2)}`:`background:${CO_DIM[ci]};color:${c};cursor:pointer`;
-    const countStyle=burning?'':`color:${c}`;
-    // 중첩 템플릿 리터럴 대신 title 문구를 변수로 분리 (가독성)
-    const titleText=burning?`${co} 챌린지 참여하기 · 오늘 ${todayN}개 작성되어 불타오르는 중!`:`${co} 챌린지 참여하기`;
-    return `<div>
-      <div class="col-header ${burning?'burning':''}" style="${headStyle}" onclick="openForm('','','${co}')" title="${titleText}">
-        <div class="co-dot" style="background:${c}"></div>
-        <span class="co-name">${co}</span>
-        ${flames}
-        <span class="col-count" style="${countStyle}">${cnt}명</span>
-        ${rightSlot}
-        ${embers}
-      </div>
-      <div class="chain">
-        ${roots.length===0
-          ?`<div class="empty-col"><div class="e-icon">🌱</div><div class="e-text">아직 참여가 없습니다</div></div>`
-          :roots.map(r=>renderBubble(r,ci,0)).join('')}
-      </div>
-    </div>`;
-  }).join('');
 
-  // admin bar
+  // 3. 정렬 순서가 바뀌었거나 첫 렌더면 전체 재구성
+  if(_cache.sortOrder!==newOrder){
+    _cache.sortOrder=newOrder;
+    col.innerHTML=companySorted.map(({co,ci})=>renderColumn(co,ci)).join('');
+  } else {
+    // 4. 순서 같으면 변경된 회사 컬럼만 교체 (핵심 최적화)
+    const toUpdate = dirtyCompany
+      ? [dirtyCompany]
+      : companySorted.filter(({co})=>_isDirty(co)).map(({co})=>co);
+
+    toUpdate.forEach(co=>{
+      const ci=COMPANIES.indexOf(co);
+      const newHTML=renderColumn(co,ci);
+      // 해당 컬럼 div만 찾아서 교체
+      const colDivs=col.children;
+      for(let i=0;i<colDivs.length;i++){
+        const chain=colDivs[i].querySelector('.chain');
+        if(chain&&chain.id===`chain-${co.replace(/\s/g,'-')}`){
+          colDivs[i].outerHTML=newHTML;
+          break;
+        }
+      }
+    });
+  }
+
+  // 5. 부가 요소 (항상 빠름)
   document.getElementById('admin-bar').style.display=IS_ADMIN?'flex':'none';
-  // top liked
   renderTopLiked();
   renderTagFilterBar();
-  // settings values
+  if(document.getElementById('filter-view-panel').classList.contains('open'))applyFilters();
   const gasEl=document.getElementById('s-gas');
   if(gasEl)gasEl.value=GAS_URL;
-  const whEl=document.getElementById('s-webhook');
-  if(whEl)whEl.value=WEBHOOK;
   updateGasStatus();updateWhStatus();
 }
 
@@ -1129,35 +1172,33 @@ function toggleLike(nodeId, ci){
   const likedBy=JSON.parse(localStorage.getItem(likeKey)||'[]');
   const sid=getSessionId();
   const btn=document.getElementById('like-'+nodeId);
-  const countEl=document.getElementById('like-count-'+nodeId);
-  const heartEl=btn?btn.querySelector('.heart'):null;
-  
-  let newCount;
+
+  let newLiked, newCount;
   if(likedBy.includes(sid)){
-    // 좋아요 취소
     const updated=likedBy.filter(s=>s!==sid);
     localStorage.setItem(likeKey,JSON.stringify(updated));
-    newCount=updated.length;
-    if(btn){btn.classList.remove('liked','pop');if(heartEl)heartEl.textContent='🤍';}
+    newLiked=false; newCount=updated.length;
   } else {
-    // 좋아요 추가
     likedBy.push(sid);
     localStorage.setItem(likeKey,JSON.stringify(likedBy));
-    newCount=likedBy.length;
-    if(btn){
-      btn.classList.add('liked');
-      btn.style.borderColor='#e74c3c';
-      if(heartEl)heartEl.textContent='❤️';
-      // pop animation
-      btn.classList.remove('pop');
-      void btn.offsetWidth;
-      btn.classList.add('pop');
-    }
-    // 좋아요 받은 사람 알림 (같은 세션 내)
+    newLiked=true; newCount=likedBy.length;
     const node=DATA.find(n=>n.id===nodeId);
     if(node)showToast('❤️ '+node.name+'님의 인사이트에 공감했어요!','success');
   }
-  if(countEl)countEl.textContent=newCount;
+
+  // DOM 직접 업데이트 — render() 호출 없음
+  if(btn){
+    btn.className='action-btn '+(newLiked?'like-active':'');
+    btn.innerHTML=(newLiked?'❤️':'🤍')+(newCount>0?`<span style="font-size:10px;margin-left:1px">${newCount}</span>`:'');
+    if(newLiked){btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');}
+  }
+
+  // DATA 동기화 (로컬)
+  const node=DATA.find(n=>n.id===nodeId);
+  if(node){node.likes=likedBy;if(!newLiked)node.likes=node.likes.filter(s=>s!==sid);}
+
+  // 인기 인사이트 바만 업데이트 (경량)
+  renderTopLiked();
 }
 
 // 가장 좋아요 많은 인사이트 계산
@@ -1213,7 +1254,7 @@ async function submitEntry(){
   setSyncing(true);
   try{
     await apiCall('add',{entry});
-    DATA.push(entry);render();closeModal('form-modal');
+    DATA.push(entry);invalidateCache(company);render(company);closeModal('form-modal');
     if(WEBHOOK)sendTeamsAlert(entry);
     document.getElementById('f-pin').value='';
     showToast('🎉 등록 완료! '+nominee+'님께 릴레이가 이어집니다.','success');
@@ -1261,8 +1302,10 @@ async function submitDelete(){
 
   try{
     await apiCall('delete',{id});
+    const deletedCo=node.company;
     DATA.splice(idx,1);
-    render();
+    invalidateCache(deletedCo);
+    render(deletedCo);
     closeModal('delete-modal');
     showToast('🗑 삭제되었습니다','success');
   }catch(e){showToast('❌ 삭제 실패: '+e.message,'error');}
@@ -1304,21 +1347,19 @@ async function submitEdit(){
     nomineeName:document.getElementById('e-nominee').value.trim(),
     pinHash:DATA[idx].pinHash, // PIN 유지
   };
-  try{await apiCall('update',{entry:updated});DATA[idx]=updated;render();closeModal('edit-modal');document.getElementById('e-pin').value='';showToast('✅ 수정 완료','success');}
+  try{await apiCall('update',{entry:updated});DATA[idx]=updated;invalidateCache(updated.company);render(updated.company);closeModal('edit-modal');document.getElementById('e-pin').value='';showToast('✅ 수정 완료','success');}
   catch(e){showToast('❌ 수정 실패: '+e.message,'error');}
 }
 
 // ===== SETTINGS =====
 // ===== 해시태그 필터 =====
-let ACTIVE_TAG = null;
+// ===== 복합 필터 (행동강령 다중 + 태그 다중, 교집합) =====
+let ACTIVE_RULES = new Set(); // 선택된 행동강령들
+let ACTIVE_TAGS  = new Set(); // 선택된 태그들
 
 function getAllTags(){
   const map={};
-  DATA.forEach(d=>{
-    (d.hashtags||[]).forEach(t=>{
-      map[t]=(map[t]||0)+1;
-    });
-  });
+  DATA.forEach(d=>{(d.hashtags||[]).forEach(t=>{map[t]=(map[t]||0)+1;});});
   return Object.entries(map).sort((a,b)=>b[1]-a[1]);
 }
 
@@ -1330,45 +1371,102 @@ function renderTagFilterBar(){
   if(tags.length===0){bar.style.display='none';return;}
   bar.style.display='flex';
   chips.innerHTML=tags.map(([t,cnt])=>
-    `<button class="tag-filter-chip ${ACTIVE_TAG===t?'active':''}" onclick="filterByTag('${t}')">#${t} <span class="tag-count">${cnt}</span></button>`
+    `<button class="tag-filter-chip ${ACTIVE_TAGS.has(t)?'active':''}" onclick="toggleTagFilter('${t}')">#${t} <span class="tag-count">${cnt}</span></button>`
   ).join('');
-  document.getElementById('tag-all').className='tag-filter-chip '+(ACTIVE_TAG===null?'active':'');
+  const allActive=ACTIVE_RULES.size===0&&ACTIVE_TAGS.size===0;
+  document.getElementById('tag-all').className='tag-filter-chip '+(allActive?'active':'');
+  // 행동강령 칩도 업데이트
+  document.querySelectorAll('.rule-chip').forEach(c=>{
+    if(c.id==='rule-all'){c.className='rule-chip '+(allActive?'active':'');return;}
+    const onclick=c.getAttribute('onclick')||'';
+    const m=onclick.match(/filterByRule\('(.+?)'\)/);
+    if(m)c.className='rule-chip '+(ACTIVE_RULES.has(m[1])?'active':'');
+  });
 }
 
-function filterByTag(tag){
-  ACTIVE_TAG=tag;
+function toggleTagFilter(tag){
+  if(ACTIVE_TAGS.has(tag))ACTIVE_TAGS.delete(tag);
+  else ACTIVE_TAGS.add(tag);
+  applyFilters();
+}
+
+function filterByTag(tag){ toggleTagFilter(tag); } // legacy
+
+function filterByRule(rule){
+  if(!rule){clearAllFilters();return;}
+  if(ACTIVE_RULES.has(rule))ACTIVE_RULES.delete(rule);
+  else ACTIVE_RULES.add(rule);
+  applyFilters();
+}
+
+function clearAllFilters(){
+  ACTIVE_RULES.clear();
+  ACTIVE_TAGS.clear();
+  applyFilters();
+}
+
+function applyFilters(){
   renderTagFilterBar();
-  const panel=document.getElementById('tag-view-panel');
+  const panel=document.getElementById('filter-view-panel');
   const mainEl=document.querySelector('.main');
-  const tagBar=document.getElementById('tag-filter-bar');
-  if(!tag){
+  const hasFilter=ACTIVE_RULES.size>0||ACTIVE_TAGS.size>0;
+
+  if(!hasFilter){
     panel.classList.remove('open');
     mainEl.style.display='block';
     return;
   }
-  // 태그 뷰 열기
+
   panel.classList.add('open');
   mainEl.style.display='none';
-  document.getElementById('tag-view-title-text').innerHTML='<span style="background:var(--accent);color:#fff;padding:2px 10px;border-radius:20px;font-size:14px">#'+tag+'</span> 인사이트 모아보기';
-  const matched=DATA.filter(d=>(d.hashtags||[]).includes(tag));
-  const cards=document.getElementById('tag-view-cards');
+
+  // 교집합 필터링
+  const matched=DATA.filter(d=>{
+    const ruleOk=ACTIVE_RULES.size===0||ACTIVE_RULES.has(d.rule);
+    const tagOk=ACTIVE_TAGS.size===0||(d.hashtags||[]).some(t=>ACTIVE_TAGS.has(t));
+    return ruleOk&&tagOk;
+  });
+
+  // 배지 표시
+  const badges=document.getElementById('filter-view-badges');
+  if(badges){
+    const ruleBadges=[...ACTIVE_RULES].map(r=>
+      `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--navy);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer" onclick="filterByRule('${r}')">🛡 ${r} ✕</span>`
+    ).join('');
+    const tagBadges=[...ACTIVE_TAGS].map(t=>
+      `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer" onclick="toggleTagFilter('${t}')">#${t} ✕</span>`
+    ).join('');
+    badges.innerHTML=ruleBadges+tagBadges;
+  }
+
+  const countEl=document.getElementById('filter-result-count');
+  if(countEl)countEl.textContent=`${matched.length}개의 인사이트가 있어요`;
+
+  const cards=document.getElementById('filter-view-cards');
   if(!cards)return;
+  if(matched.length===0){
+    cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">선택한 조건에 맞는 인사이트가 없어요</div>';
+    return;
+  }
   cards.innerHTML=matched.map(d=>{
     const ci=COMPANIES.indexOf(d.company);
     const c=CO_COLORS[ci>=0?ci:0];
     const cdim=CO_DIM[ci>=0?ci:0];
-    const tags=(d.hashtags||[]).map(t=>`<span class="tag" style="${t===tag?'background:var(--accent-dim);border-color:rgba(0,178,169,.3);color:var(--accent);':''}">#${t}</span>`).join('');
-    return `<div class="node-card" style="border-color:${c}30;cursor:default">
+    const tagHtml=(d.hashtags||[]).map(t=>
+      `<span class="tag" style="${ACTIVE_TAGS.has(t)?'background:var(--accent-dim);border-color:rgba(0,178,169,.3);color:var(--accent);':''}">#${t}</span>`
+    ).join('');
+    const ruleHighlight=ACTIVE_RULES.has(d.rule)?`background:var(--navy);color:#fff;`:``;
+    return `<div style="background:#fff;border:1.5px solid ${c}30;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <div class="bubble-avatar" style="background:${cdim};color:${c};border-color:${c};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${d.name.slice(0,2)}</div>
-        <div>
+        <div style="width:32px;height:32px;border-radius:50%;background:${cdim};color:${c};border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${d.name.slice(0,2)}</div>
+        <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:var(--navy)">${d.name}</div>
           <div style="font-size:11px;color:var(--text3)">${d.company} · ${d.role||''}</div>
         </div>
       </div>
-      <div style="font-size:13px;line-height:1.7;color:var(--text);border-left:3px solid ${c};padding:8px 12px;background:${cdim};border-radius:0 6px 6px 0;margin-bottom:10px">${d.comment||''}</div>
-      ${d.rule?`<div style="display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 9px;border-radius:20px;background:${cdim};color:${c};border:1px solid ${c}40;font-weight:600;margin-bottom:8px">🛡 ${d.rule}</div>`:''}
-      <div style="display:flex;flex-wrap:wrap;gap:4px">${tags}</div>
+      <div style="font-size:13px;line-height:1.75;color:var(--text);border-left:3px solid ${c};padding:8px 12px;background:${cdim};border-radius:0 6px 6px 0;margin-bottom:10px">${d.comment||''}</div>
+      ${d.rule?`<div style="display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid ${c}40;font-weight:600;margin-bottom:8px;${ruleHighlight||`background:${cdim};color:${c};`}">🛡 ${d.rule}</div>`:''}
+      ${tagHtml?`<div style="display:flex;flex-wrap:wrap;gap:4px">${tagHtml}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1572,6 +1670,7 @@ async function loadDemo(){
   try{
     for(const s of samples)await apiCall('add',{entry:s});
     DATA=[...DATA,...samples];
+    invalidateCache();
     render();
     showToast(`📦 샘플 ${samples.length}개 추가! 총 ${DATA.length}명 참여 중`,'success');
   }catch(e){showToast('❌ 실패: '+e.message,'error');}
@@ -1579,7 +1678,7 @@ async function loadDemo(){
 }
 async function clearAll(){
   if(!confirm('전체 초기화할까요?'))return;
-  try{await apiCall('clear');DATA=[];render();showToast('🗑 초기화 완료');}
+  try{await apiCall('clear');DATA=[];invalidateCache();render();showToast('🗑 초기화 완료');}
   catch(e){showToast('❌ 실패: '+e.message,'error');}
 }
 
