@@ -826,7 +826,7 @@ function buildChain(company){
     }
   });
   // 최신순 정렬 (createdAt 내림차순)
-  roots.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  roots.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)); // 오래된 것이 아래, 최신이 위 (바텀업)
   return roots;
 }
 
@@ -850,8 +850,7 @@ function renderBubble(node,ci,depth=0){
         </div>
       </div>`;
     }
-    return `<div class="connector" style="background:${pc}40"></div>
-    <div class="bubble-wrap">
+    return `<div class="bubble-wrap">
       <div class="pending-bubble"
         onclick="openFormFromPending('${node.company}','${node.parentId}','${node.fromName}')"
         style="cursor:pointer;transition:all .2s;border:1.5px dashed ${pc}50"
@@ -864,6 +863,7 @@ function renderBubble(node,ci,depth=0){
         </div>
         <div class="pending-timer" style="color:${t.urgent?'var(--danger)':'var(--warning)'}">${t.text}</div>
       </div>
+      <div class="connector" style="background:${pc}40"></div>
     </div>`;
   }
 
@@ -882,9 +882,12 @@ function renderBubble(node,ci,depth=0){
   const isLiked=likedBy.includes(sessionId);
   const likeCount=likedBy.length;
 
+  // 바텀업: children(최신)이 위, 본인 카드가 아래
+  const childrenHtml=(node.children||[]).map(c2=>renderBubble(c2,ci,depth+1)).join('');
   return `
-  ${depth>0?`<div class="connector" style="background:${c}40"></div>`:''}
   <div class="bubble-wrap">
+    ${childrenHtml}
+    ${(node.children||[]).length>0?`<div class="connector" style="background:${c}40"></div>`:''}
     <div class="bubble ${isRoot?'root-bubble':''}" style="border-color:${isRoot?c:''}">
       <div class="bubble-head">
         <div class="bubble-avatar" style="background:${av[0]};color:${av[1]};border-color:${c}">${getInitials(node.name)}</div>
@@ -910,7 +913,6 @@ function renderBubble(node,ci,depth=0){
       ${tags?`<div class="bubble-tags" style="margin-top:7px">${tags}</div>`:''}
       ${node.nomineeName?`<div style="margin-top:8px;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px"><span style="color:${c}">→</span> ${node.nomineeName}님께 릴레이</div>`:''}
     </div>
-    ${(node.children||[]).map(c2=>renderBubble(c2,ci,depth+1)).join('')}
   </div>`;
 }
 
