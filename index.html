@@ -4,163 +4,1048 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Winning Rules Challenge — 상상인 그룹</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap\" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{\n  --bg:#f5f6f8;--bg2:#fff;--bg3:#eef0f4;--border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);\n  --accent:#00b2a9;--accent-d:#008f88;--accent-dim:rgba(0,178,169,.10);\n  --navy:#2c3e50;--navy2:#3d5166;--text:#1a2433;--text2:#566070;--text3:#9ba8b5;\n  --danger:#e74c3c;--warning:#e67e22;--radius:14px;--radius-sm:9px;\n  /* 5개사 공식 컬러 */\n  --c0:#00BFB6; --c1:#007A87; --c2:#FF5A5F; --c3:#FFB400; --c4:#8CE85C;\n}
-/* (기존 CSS 스타일 생략 - 원본 스타일 그대로 유지됨) */
+:root{
+  --bg:#f5f6f8;--bg2:#fff;--bg3:#eef0f4;--border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --accent:#00b2a9;--accent-d:#008f88;--accent-dim:rgba(0,178,169,.10);
+  --navy:#2c3e50;--navy2:#3d5166;--text:#1a2433;--text2:#566070;--text3:#9ba8b5;
+  --danger:#e74c3c;--warning:#e67e22;--radius:14px;--radius-sm:9px;
+  /* 5개사 공식 컬러 */
+  --c0:#00BFB6;--c0d:rgba(0,191,182,.12);   /* 상상인 */
+  --c1:#273646;--c1d:rgba(39,54,70,.10);    /* 상상인증권 */
+  --c2:#E85D26;--c2d:rgba(232,93,38,.10);   /* 시너지이노베이션 */
+  --c3:#2E9E6B;--c3d:rgba(46,158,107,.10);  /* 메디카코리아 */
+  --c4:#1565C0;--c4d:rgba(21,101,192,.10);  /* 선박기계 */
+  
+  /* 랭킹 보드 전용 컬러 */
+  --gold:#f1c40f;--silver:#bdc3c7;--bronze:#e67e22;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NAV */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 1px 12px rgba(0,0,0,.06)}
+.nav-logo{display:flex;align-items:center;gap:14px}
+.nav-logo img.logo{height:32px;width:auto}
+.nav-divider{width:1px;height:24px;background:var(--border2)}
+.nav-title{font-size:13px;font-weight:600;color:var(--text2)}
+#sync-indicator{display:none;align-items:center;gap:6px;font-size:12px;color:var(--accent);padding:5px 12px;background:var(--accent-dim);border-radius:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:8px;height:8px;border-radius:50%;border:2px solid var(--accent);border-top-color:transparent;animation:spin .7s linear infinite}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:#fff;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.btn-accent:hover{background:var(--accent-d);color:#fff;border-color:var(--accent-d)}
+
+/* HERO */
+.hero{background:#fff;border-bottom:1px solid var(--border);position:relative;overflow:hidden;transition:opacity 0.5s ease}
+.hero-inner{display:flex;align-items:stretch;width:100%;padding:0}
+.hero-left{flex:1;padding:36px 40px 36px 32px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);position:relative;z-index:1}
+.hero-right{width:260px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:24px 32px 24px 24px;background:linear-gradient(135deg,rgba(0,191,182,.04),rgba(0,191,182,.01));position:relative}
+.hero-right::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(0,191,182,.08),transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--c0),var(--c1),var(--c2),var(--c3))}
+.hero-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(0,178,169,.3);padding:5px 12px;border-radius:20px;margin-bottom:16px;width:fit-content}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,3vw,42px);color:var(--navy);line-height:1.2;margin-bottom:12px;letter-spacing:-.02em}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:14px;color:var(--text2);line-height:1.8;max-width:420px;margin-bottom:22px}
+.hero-pills{display:flex;gap:7px;flex-wrap:wrap}
+.hero-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+.hero-char{position:relative;z-index:1}
+.hero-char img{width:210px;height:auto;object-fit:contain;animation:float 3.5s ease-in-out infinite;filter:drop-shadow(0 6px 20px rgba(0,191,182,.18))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* STATS */
+.stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:#fff}
+.stat-item{flex:1;padding:18px 0;text-align:center;border-right:1px solid var(--border);position:relative;transition:background .15s}
+.stat-item:last-child{border-right:none}
+.stat-item:hover{background:var(--bg2)}
+.stat-num{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;line-height:1;margin-bottom:5px;transition:transform .2s}
+.stat-item:hover .stat-num{transform:scale(1.08)}
+.stat-label{font-size:11px;color:var(--text3);font-weight:500}
+
+/* COMPANY TABS */
+.company-tabs{display:flex;gap:0;padding:0 32px;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto}
+.co-tab{padding:12px 20px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2.5px solid transparent;color:var(--text2);white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:7px}
+.co-tab:hover{color:var(--text)}
+.co-tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:700}
+.co-dot{width:8px;height:8px;border-radius:50%}
+
+/* MAIN LAYOUT */
+.main{padding:28px 32px;background:var(--bg);transition:opacity 0.5s ease}
+
+/* 5 COLUMNS */
+.four-col{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start}
+.col-header{display:flex;align-items:center;gap:8px;padding:13px 16px;border-radius:var(--radius-sm);margin-bottom:16px;font-weight:700;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:all .18s}
+.col-header:hover{filter:brightness(.97);box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.col-count{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.6);margin-left:auto;font-weight:600}
+
+/* CHAIN */
+.chain{display:flex;flex-direction:column;align-items:center;gap:0}
+
+/* BUBBLE CARD */
+.bubble-wrap{width:100%;position:relative;display:flex;flex-direction:column;align-items:center}
+.bubble{width:100%;background:#fff;border:1.5px solid var(--border2);border-radius:16px;padding:16px;position:relative;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.bubble:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
+.bubble.root-bubble{border-width:2px}
+
+.bubble-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.action-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text3);cursor:pointer;transition:all .15s;font-size:13px}
+.action-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg2)}
+.action-btn.edit:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.action-btn.del:hover{border-color:#e74c3c;color:#e74c3c;background:rgba(231,76,60,.07)}
+
+.bubble::after{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid #fff}
+.bubble::before{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:11px solid var(--border2)}
+.bubble-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bubble-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace;border:2px solid}
+.bubble-info{flex:1;min-width:0}
+.bubble-name{font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bubble-role{font-size:10px;color:var(--text3)}
+.bubble-comment{font-size:12px;line-height:1.7;color:var(--text);margin-bottom:10px;word-break:keep-all}
+.bubble-rule{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:5px 10px;border-radius:20px;font-weight:600;margin-bottom:8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.bubble-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.tag{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.bubble-footer{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text3)}
+.bubble-nominee{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)}
+
+/* CONNECTOR LINE */
+.connector{width:2px;height:24px;background:linear-gradient(180deg,var(--border2),var(--border2));margin:0 auto}
+
+/* PENDING BUBBLE */
+.pending-bubble{width:100%;background:var(--bg2);border:1.5px dashed var(--border2);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.pending-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.pending-info{flex:1;min-width:0}
+.pending-name{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pending-from{font-size:10px;color:var(--text3)}
+.pending-timer{font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0}
+
+/* EMPTY COL */
+.empty-col{text-align:center;padding:32px 16px;color:var(--text3)}
+.empty-col .e-icon{font-size:32px;margin-bottom:8px}
+.empty-col .e-text{font-size:12px}
+
+/* FORM MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,36,51,.6);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:var(--radius);padding:24px;width:100%;max-width:460px;transform:translateY(12px);transition:transform .2s;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--navy);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+.form-label{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.04em;margin-bottom:5px;display:block}
+.form-row{margin-bottom:14px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .15s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:#fff}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text3)}
+.form-textarea{resize:vertical;min-height:72px;line-height:1.6}
+.form-hint{font-size:10px;color:var(--text3);margin-top:3px}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--radius-sm);min-height:42px;cursor:text;align-items:center}
+.tag-input-wrap:focus-within{border-color:var(--accent);background:#fff}
+.tag-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--accent-dim);color:var(--accent-d);border:1px solid rgba(0,178,169,.25)}
+.tag-pill button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--accent-d);line-height:1;padding:0;margin-left:2px}
+.tag-text-input{border:none;outline:none;background:transparent;font-size:12px;color:var(--text);font-family:'Noto Sans KR',sans-serif;min-width:80px;flex:1}
+
+/* SETTINGS PANEL */
+.settings-panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:#fff;border-left:1px solid var(--border2);z-index:200;padding:24px;transform:translateX(100%);transition:transform .3s;overflow-y:auto;box-shadow:-8px 0 32px rgba(0,0,0,.08)}
+.settings-panel.open{transform:translateX(0)}
+.settings-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+.settings-title{font-family:'DM Serif Display',serif;font-size:17px;color:var(--navy);margin-bottom:20px;padding-right:36px}
+.sg{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.sg-title{font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.sg-label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:4px}
+.ws{display:flex;align-items:center;gap:7px;font-size:12px;padding:7px 11px;border-radius:6px;margin-bottom:10px}
+.ws.ok{background:rgba(0,178,169,.08);color:var(--accent);border:1px solid rgba(0,178,169,.2)}
+.ws.no{background:rgba(231,76,60,.06);color:var(--danger);border:1px solid rgba(231,76,60,.15)}
+.ws-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.admin-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:18px;border:1px solid var(--border);flex-wrap:wrap}
+.admin-action{font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .12s}
+.admin-action:hover{background:var(--accent-dim);color:var(--accent);border-color:rgba(0,178,169,.3)}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:#fff;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 18px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .25s;max-width:320px;box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:3px solid var(--accent)}
+.toast.error{border-left:3px solid var(--danger)}
+
+/* LIKE BUTTON */
+.like-btn{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;transition:all .18s;font-family:'Noto Sans KR',sans-serif}
+.like-btn:hover{border-color:#e74c3c;color:#e74c3c;background:rgba(231,76,60,.05)}
+.like-btn.liked{border-color:#e74c3c;color:#e74c3c;background:rgba(231,76,60,.08);font-weight:600}
+.like-btn .heart{font-size:12px;transition:transform .2s}
+.like-btn:hover .heart{transform:scale(1.3)}
+.like-btn.pop .heart{animation:heartPop .35s ease forwards}
+@keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.5)}70%{transform:scale(.9)}100%{transform:scale(1.15)}}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(0,178,169,.4);display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:40}
+.fab:hover{background:var(--accent-d);transform:scale(1.08)}
+
+@media(max-width:1100px){.four-col{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){
+  .four-col{grid-template-columns:repeat(2,1fr)}
+  .main{padding:20px 16px}
+  .nav{padding:12px 16px}
+  .hero-inner{flex-direction:column}
+  .hero-left{padding:24px 20px;border-right:none;border-bottom:1px solid var(--border)}
+  .hero-right{width:100%;padding:16px 20px;justify-content:flex-start}
+  .hero-char img{width:140px}
+}
+@media(max-width:640px){
+  .four-col{grid-template-columns:repeat(2,1fr);gap:10px}
+  .settings-panel{width:100%}
+  .nav-actions .btn:not(.btn-accent){display:none}
+  .cd-num{font-size:16px;padding:2px 6px;min-width:28px}
+}
+@media(max-width:420px){
+  .four-col{grid-template-columns:1fr}
+  .stats-bar{flex-wrap:wrap}
+  .stat-item{flex:0 0 50%;border-bottom:1px solid var(--border)}
+}
+
+/* D-DAY COUNTDOWN BAR */
+.countdown-bar{background:linear-gradient(90deg,var(--navy),#3d5166);color:#fff;padding:8px 32px;display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:16px}
+.countdown-bar.hidden{display:none}
+.cd-label{display:flex;align-items:center;gap:6px;font-weight:600;opacity:.9;font-size:11px}
+.cd-timer{display:flex;align-items:center;gap:8px}
+.cd-unit{text-align:center}
+.cd-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;line-height:1;background:rgba(255,255,255,.15);border-radius:6px;padding:3px 8px;min-width:36px;display:inline-block}
+.cd-label-small{font-size:9px;opacity:.7;margin-top:2px;display:block}
+.cd-sep{font-size:16px;font-weight:700;opacity:.5;margin-bottom:10px}
+.cd-urgent .cd-num{background:rgba(231,76,60,.4);animation:cdPulse 1s infinite}
+@keyframes cdPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.cd-toggle{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer}
+
+/* RULE FILTERS UX */
+.rule-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-wrap:nowrap}
+.rule-filter-label{font-size:10px;font-weight:700;color:var(--text3);white-space:nowrap;letter-spacing:.08em;text-transform:uppercase;padding-right:6px;border-right:1px solid var(--border);margin-right:2px}
+.rule-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .2s cubic-bezier(0.4, 0, 0.2, 1);white-space:nowrap;font-weight:500}
+.rule-chip:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.rule-chip.active{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;font-weight:600;box-shadow:0 4px 10px rgba(0,178,169,0.25);transform:translateY(-1px)}
+
+/* TAG FILTERS */
+.tag-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-wrap:nowrap}
+.tag-filter-label{font-size:11px;font-weight:700;color:var(--text3);white-space:nowrap;letter-spacing:.06em}
+.tag-filter-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .2s}
+.tag-filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+
+/* COMPANY SELECTION IN FORM */
+.co-select-row{display:flex;gap:10px;margin-bottom:18px}
+.co-select-card{flex:1;border:2px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .18s;background:#fff}
+.co-select-card.selected{border-width:2.5px;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.co-select-dot{width:10px;height:10px;border-radius:50%;margin:0 auto 6px}
+.co-select-name{font-size:11px;font-weight:700}
+
+/* 🔥 BURNING HEADER ANIMATION */
+@keyframes wrHeatGlow{
+  0%,100%{box-shadow:0 0 calc(5px + var(--heat,0)*12px) rgba(255,120,20,calc(.22 + var(--heat,0)*.45))}
+  50%{box-shadow:0 0 calc(10px + var(--heat,0)*26px) rgba(255,70,0,calc(.38 + var(--heat,0)*.5))}
+}
+@keyframes wrFlicker{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-2px) scale(1.1)}
+}
+.col-header.burning{
+  position:relative;background:linear-gradient(90deg,#fff4e6,#ffe2b8,#ffd0a8,#ffe2b8,#fff4e6);
+  color:#9a3412;font-weight:800;border:1px solid rgba(255,120,20,.5);
+  animation:wrHeatGlow 1.4s ease-in-out infinite;
+}
+.col-flames .flame{display:inline-block;font-size:15px;animation:wrFlicker .8s ease-in-out infinite}
+
+/* 🏆 HONOR BOARD RANKING PANEL */
+#ranking-board {
+  display:none;animation:fadeInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  max-width:800px;margin:50px auto;padding:40px 30px;background:var(--bg2);
+  border-radius:var(--radius);box-shadow:0 20px 50px rgba(0,0,0,0.08);text-align:center;
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.podium-container{display:flex;justify-content:center;align-items:flex-end;gap:20px;margin:45px 0 35px;padding-bottom:25px;border-bottom:2px dashed var(--bg3)}
+.podium-step{display:flex;flex-direction:column;align-items:center;width:140px;font-weight:700}
+.podium-step .avatar{width:64px;height:64px;border-radius:50%;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.podium-step.gold .avatar{background:var(--gold);box-shadow:0 0 20px rgba(241,196,15,0.6)}
+.podium-step.silver .avatar{background:var(--silver)}
+.podium-step.bronze .avatar{background:var(--bronze)}
+.podium-base{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:18px;border-radius:10px 10px 0 0;font-family:'DM Serif Display',serif}
+.podium-score{font-size:11px;opacity:0.9;font-weight:400;margin-top:2px;font-family:'DM Mono',monospace}
+.gold .podium-base{height:140px;background:linear-gradient(135deg,#f39c12,#f1c40f)}
+.silver .podium-base{height:105px;background:linear-gradient(135deg,#7f8c8d,#bdc3c7)}
+.bronze .podium-base{height:80px;background:linear-gradient(135deg,#d35400,#e67e22)}
+.rank-list{text-align:left;max-width:550px;margin:25px auto 0}
+.rank-item{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;margin-bottom:10px;background:var(--bg3);border-radius:var(--radius-sm)}
+.rank-badge{font-weight:700;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--navy2);color:#fff;font-size:13px}
 </style>
 </head>
 <body>
 
+<nav class="nav">
+  <div class="nav-logo">
+    <img class="logo" id="logo-img" src="" alt="상상인">
+    <div class="nav-divider"></div>
+    <span class="nav-title">Winning Rules Challenge</span>
+  </div>
+  <div id="sync-indicator"><div class="spin"></div> 동기화 중...</div>
+  <div class="nav-actions">
+    <button class="btn" onclick="loadFromSheets()">🔄 새로고침</button>
+    <button class="btn" onclick="openSettingsAuth()">⚙ 설정</button>
+    <button class="btn btn-accent" onclick="openForm()">✍ 참여하기</button>
+  </div>
+</nav>
+
+<div class="countdown-bar hidden" id="countdown-bar">
+  <div class="cd-label">🏁 챌린지 종료까지</div>
+  <div class="cd-timer" id="cd-timer">
+    <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><span class="cd-label-small">DAYS</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-hours">--</span><span class="cd-label-small">HRS</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-mins">--</span><span class="cd-label-small">MIN</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-secs">--</span><span class="cd-label-small">SEC</span></div>
+  </div>
+  <button class="cd-toggle" id="cd-toggle-btn" onclick="toggleCountdown()">숨기기</button>
+</div>
+
+<div id="main-challenge-wrapper">
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="hero-left">
+          <div class="hero-label"><div class="pulse"></div> live challenge</div>
+          <h1>Winning Rules <em>Challenge</em></h1>
+          <p class="hero-sub">상상인 그룹 임직원들이 함께 만들어가는 행동강령 챌린지입니다. 서로의 실천을 응원하고 말풍선을 연결해 보세요!</p>
+          <div class="hero-pills" id="hero-rules-pills"></div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-char"><img id="hero-avatar" src="" alt="캐릭터"></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="stats-bar">
+      <div class="stat-item"><div class="stat-num" id="stat-total-chains">--</div><div class="stat-label">총 체인 연결</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-total-bubbles">--</div><div class="stat-label">누적 말풍선</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-active-users">--</div><div class="stat-label">참여 임직원</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-top-company" style="font-size:16px;font-weight:700;padding-top:8px">—</div><div class="stat-label">현재 1위 회사</div></div>
+    </section>
+
+    <nav class="company-tabs" id="company-tabs"></nav>
+
+    <div class="rule-filter-bar" id="rule-filter-bar"><div class="rule-filter-label">Rules</div></div>
+    <div class="tag-filter-bar" id="tag-filter-bar"><div class="tag-filter-label">Tags</div></div>
+
+    <main class="main">
+      <div class="four-col" id="board-grid"></div>
+    </main>
+</div>
+
+<div id="ranking-board">
+  <h2 style="font-family:'DM Serif Display', serif; font-size: 34px; color: var(--navy); margin-bottom: 6px; letter-spacing: -0.03em;">👑 WINNING RULES HONOR BOARD</h2>
+  <p style="color: var(--text2); font-size: 14px; margin-bottom: 30px;">챌린지가 성공적으로 마감되었습니다! 최종 명예의 전당을 발표합니다.</p>
+  
+  <div class="podium-container" id="podium-display">
+    <div class="podium-step silver">
+      <div class="avatar">🥈</div>
+      <div id="podium-2nd-name" style="font-size:13px; margin-bottom:6px; color:var(--text2);">상상인증권</div>
+      <div class="podium-base">2nd<span class="podium-score" id="podium-2nd-score">-- pts</span></div>
+    </div>
+    <div class="podium-step gold">
+      <div class="avatar">🥇</div>
+      <div id="podium-1st-name" style="font-size:15px; margin-bottom:6px; font-weight:700; color:var(--navy);">상상인저축은행</div>
+      <div class="podium-base">1st<span class="podium-score" id="podium-1st-score">-- pts</span></div>
+    </div>
+    <div class="podium-step bronze">
+      <div class="avatar">🥉</div>
+      <div id="podium-3rd-name" style="font-size:13px; margin-bottom:6px; color:var(--text2);">상상인플러스저축은행</div>
+      <div class="podium-base">3rd<span class="podium-score" id="podium-3rd-score">-- pts</span></div>
+    </div>
+  </div>
+  <div class="rank-list" id="sub-rank-list"></div>
+</div>
+
+<div class="modal-overlay" id="form-modal" onclick="closeFormOnOverlay(event)">
+  <div class="modal">
+    <h3 class="modal-title" id="form-modal-title">Create Challenge Bubble</h3>
+    <p class="modal-sub">상상인 행동강령을 실천한 이야기를 들려주세요.</p>
+    <form id="bubble-form" onsubmit="submitBubbleForm(event)">
+      <input type="hidden" id="form-edit-id">
+      <input type="hidden" id="form-parent-id">
+      
+      <div class="form-row">
+        <label class="form-label">소속 회사 선택</label>
+        <div class="co-select-row" id="form-co-select"></div>
+      </div>
+      <div class="form-grid2">
+        <div class="form-row">
+          <label class="form-label" for="form-name">작성자 이름</label>
+          <input class="form-input" type="text" id="form-name" required placeholder="홍길동">
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="form-role">직급 / 직책</label>
+          <input class="form-input" type="text" id="form-role" required placeholder="매니저">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="form-rule">실천 행동강령</label>
+        <select class="form-select" id="form-rule" required></select>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="form-comment">실천 내용 (말풍선 코멘트)</label>
+        <textarea class="form-textarea" id="form-comment" required placeholder="행동강령을 어떻게 실천했는지 구체적으로 공유해주세요."></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-label">해시태그 입력 <span style="font-weight:400;color:var(--text3)">(엔터나 쉼표로 구분)</span></label>
+        <div class="tag-input-wrap" onclick="focusTagInput()">
+          <div id="tag-pills-container" style="display:inline-flex;flex-wrap:wrap;gap:4px"></div>
+          <input class="tag-text-input" type="text" id="form-tag-input" placeholder="태그 입력..." onkeydown="handleTagInput(event)">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">다음 주자 지목 <span style="font-weight:400;color:var(--text3)">(선택사항)</span></label>
+        <div class="form-grid2">
+          <input class="form-input" type="text" id="form-nominee-name" placeholder="지목할 이름">
+          <input class="form-input" type="text" id="form-nominee-dept" placeholder="지목할 부서/회사">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" type="button" onclick="closeForm()">취소</button>
+        <button class="btn btn-accent" type="submit" id="form-submit-btn">등록하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settings-auth-modal">
+  <div class="modal" style="max-width:380px">
+    <h3 class="modal-title">⚙ 시스템 관리자 인증</h3>
+    <p class="modal-sub" style="margin-bottom:14px">구글 시트 연동 설정을 변경하려면 패스워드를 입력하세요.</p>
+    <div class="form-row">
+      <input class="form-input" type="password" id="settings-auth-pwd" placeholder="Password 입력..." onkeydown="if(event.key==='Enter')verifySettingsAuth()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeSettingsAuth()">취소</button>
+      <button class="btn btn-accent" onclick="verifySettingsAuth()">인증하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="settings-panel" id="settings-panel">
+  <button class="settings-close" onclick="closeSettings()">×</button>
+  <h3 class="settings-title">⚙ 구글 시트 연동 설정</h3>
+  <div class="sg">
+    <div class="sg-title">Connection Status</div>
+    <div class="ws no" id="ws-status"><div class="ws-dot"></div><span id="ws-status-text">연결 안 됨</span></div>
+  </div>
+  <div class="sg">
+    <div class="sg-title">API Endpoint Configuration</div>
+    <div class="form-row">
+      <label class="sg-label" for="set-script-url">Google Apps Script Web App URL</label>
+      <input class="form-input" type="text" id="set-script-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+  </div>
+  <div class="sg">
+    <div class="sg-title">Challenge Option</div>
+    <div class="form-row">
+      <label class="sg-label" for="set-end-date">챌린지 마감 일시 (D-Day)</label>
+      <input class="form-input" type="datetime-local" id="set-end-date">
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+      <label class="sg-label" style="margin:0">카운트다운 바 노출</label>
+      <input type="checkbox" id="set-show-countdown" style="width:16px;height:16px;cursor:pointer">
+    </div>
+  </div>
+  <div class="sg">
+    <div class="sg-title">Local Dev & Cache Data</div>
+    <div class="admin-bar">
+      <button class="admin-action" onclick="clearLocalCache()">로컬 캐시 초기화</button>
+    </div>
+  </div>
+  <div style="margin-top:24px">
+    <button class="btn btn-accent" style="width:100%;justify-content:center;padding:10px" onclick="saveSettings()">설정 저장 및 동기화</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="fab" id="main-fab" onclick="openForm()">+</button>
+
 <script>
 // ==========================================
-// 전역 상태 관리 및 필터 변수
+// 1. CONFIG & STATE MANAGEMENT (행동강령 원문 100% 철저 보존)
 // ==========================================
-let CURRENT_COMPANY = 'all';
-let CURRENT_TAGS = new Set();
-let CURRENT_SEARCH = '';
-let ACTIVE_RULES = new Set(); // 활성화된 행동강령 필터 (복합 필터링용)
+const COMPANIES = [
+  { id: 'c0', name: '상상인', logo: 'https://blog.kakaocdn.net/dn/b6m8Zl/btsInH7f6Uv/kkKof0bSkZkKIKK8gW6Oik/img.png' },
+  { id: 'c1', name: '상상인증권', logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6A7f9W0Wv' },
+  { id: 'c2', name: '시너지이노베이션', logo: '' },
+  { id: 'c3', name: '메디카코리아', logo: '' },
+  { id: 'c4', name: '선박기계', logo: '' }
+];
 
-// 데이터 및 카운트 다운 관련 로직
-let cdInterval;
-const endTime = new Date('2026-07-31T23:59:59').getTime(); 
+// 🛡 요청해주신 9가지 행동강령 전체 명칭 절대 보존 리스트
+const WINNING_RULES = [
+  { id: 'r1', title: '변화를 이끌거나, 비키거나', desc: '상상인인의 능동적이고 과감한 리더십 수립' },
+  { id: 'r2', title: '완성보다 속도, 성공보다 시도', desc: '실패를 두려워하지 않는 신속한 도전 전개' },
+  { id: 'r3', title: '배움은 생존을 위한 가장 공격적인 투자', desc: '자기 계발과 지속가능성 확보를 위한 노력' },
+  { id: 'r4', title: '외부 인사이트를 내부 자산으로 연결한다', desc: '트렌드를 습득하고 우리만의 가치로 가공' },
+  { id: 'r5', title: '직급에 상관없이 전원이 의사결정에 참여해야 한다', desc: '수평적인 소통 구조와 적극적 참여 실현' },
+  { id: 'r6', title: '우리 팀을 넘어 우리 회사의 답을 찾는다', desc: '부서 이기주의를 혁파하고 전사 통합 가치 창출' },
+  { id: 'r7', title: '우리는 뒤에서 말하지 않는다', desc: '투명하고 솔직한 면대면 피드백 지향' },
+  { id: 'r8', title: '동료의 의견을 듣는 것도 팀웍에 포함이다', desc: '경청과 배려를 바탕으로 한 진정한 협동' },
+  { id: 'r9', title: '다름을 인정하라. 내가 틀릴 수도 있다', desc: '다양성 수용과 상호 신뢰의 조직 문화 정착' }
+];
+
+const FIRE_MIN = 1;
+const FIRE_MAX = 5;
+
+let STATE_BUBBLES = [];
+let STATE_PENDINGS = [];
+let ACTIVE_COMPANY_FILTER = 'all';
+let ACTIVE_RULE_FILTERS = new Set();
+let ACTIVE_TAG_FILTERS = new Set();
+let FORM_TAGS = [];
+let cdInterval = null;
+
+function getBackendUrl() { return localStorage.getItem('wr_script_url') || ''; }
+function getEndDate() { return localStorage.getItem('wr_enddate') || ''; }
+function isCountdownVisible() { return localStorage.getItem('wr_countdown_on') !== '0'; }
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.className = `toast show ${type}`;
+  t.textContent = msg;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function showSync(show) { document.getElementById('sync-indicator').style.display = show ? 'inline-flex' : 'none'; }
 
 // ==========================================
-// 통합 복합 필터링 함수 (핵심 수정 분)
+// 2. COUNTDOWN & HONOR LEADERBOARD TRANSITION ENGINE
 // ==========================================
-function filterCards() {
-  const cards = document.querySelectorAll('.card-item');
-  let visibleCount = 0;
-
-  cards.forEach(card => {
-    // 1. 회사 필터 체크
-    const comp = card.getAttribute('data-comp');
-    const matchCompany = (CURRENT_COMPANY === 'all' || comp === CURRENT_COMPANY);
-
-    // 2. 태그 필터 체크 (선택된 태그를 모두 포함해야 함 - AND 조건)
-    const cardTagsStr = card.getAttribute('data-tags') || '';
-    const cardTags = cardTagsStr.split(',').map(t => t.trim()).filter(t => t);
-    const matchTags = Array.from(CURRENT_TAGS).every(t => cardTags.includes(t));
-
-    // 3. 행동강령(Rule) 필터 체크 (ACTIVE_RULES가 비어있으면 패스, 있으면 포함되어야 함)
-    const ruleId = card.getAttribute('data-rule');
-    const matchRule = (ACTIVE_RULES.size === 0 || ACTIVE_RULES.has(ruleId));
-
-    // 4. 검색어 필터 체크
-    const text = card.textContent.toLowerCase();
-    const matchSearch = (!CURRENT_SEARCH || text.includes(CURRENT_SEARCH));
-
-    // 모든 조건이 다 맞아야 최종 노출 (복합 AND 필터링)
-    if (matchCompany && matchTags && matchRule && matchSearch) {
-      card.style.display = '';
-      visibleCount++;
-    } else {
-      card.style.display = 'none';
-    }
-  });
-
-  // 검색 결과가 없을 때의 예외 처리 레이아웃 조절
-  const noResult = document.getElementById('no-results');
-  if (noResult) {
-    noResult.style.display = visibleCount === 0 ? 'block' : 'none';
+function updateCountdownBar() {
+  const bar = document.getElementById('countdown-bar');
+  const edStr = getEndDate();
+  if (!isCountdownVisible() || !edStr) {
+    bar.classList.add('hidden');
+    if(cdInterval) clearInterval(cdInterval);
+    return;
   }
-}
+  bar.classList.remove('hidden');
+  document.getElementById('cd-toggle-btn').textContent = '숨기기';
 
-// ==========================================
-// 각 필터 요소 이벤트 처리 함수
-// ==========================================
+  const endTime = new Date(edStr).getTime();
+  if (cdInterval) clearInterval(cdInterval);
 
-// 1. 회사 필터 선택 시
-function filterCompany(companyId, btn) {
-  CURRENT_COMPANY = companyId;
-  document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  filterCards();
-}
-
-// 2. 태그 필터 토글 시
-function toggleTag(tag, btn) {
-  if (CURRENT_TAGS.has(tag)) {
-    CURRENT_TAGS.delete(tag);
-    if(btn) btn.classList.remove('active');
-  } else {
-    CURRENT_TAGS.add(tag);
-    if(btn) btn.classList.add('active');
-  }
-  filterCards();
-}
-
-// 3. 행동강령 필터 토글 함수 (덮어쓰기 문제 해결 및 복합 필터 연동)
-function filterByRule(ruleId) {
-  const ruleLi = document.querySelector(`li[data-rule-id="${ruleId}"]`);
-  
-  if (ACTIVE_RULES.has(ruleId)) {
-    // 이미 활성화된 경우 클리어
-    ACTIVE_RULES.delete(ruleId);
-    if (ruleLi) ruleLi.classList.remove('active');
-  } else {
-    // 새로 활성화하는 경우
-    ACTIVE_RULES.add(ruleId);
-    if (ruleLi) ruleLi.classList.add('active');
-  }
-  
-  // 통합 필터 호출하여 태그/회사와 복합 적용
-  filterCards();
-}
-
-// 검색창 입력 이벤트 리스너
-document.getElementById('search-input')?.addEventListener('input', (e) => {
-  CURRENT_SEARCH = e.target.value.toLowerCase().trim();
-  filterCards();
-});
-
-// 검색어 초기화
-function clearSearch() {
-  const input = document.getElementById('search-input');
-  if (input) input.value = '';
-  CURRENT_SEARCH = '';
-  filterCards();
-}
-
-// 카운트다운 및 다크모드 등 초기화 스크립트
-function toggleCountdown(){
-  const t = document.getElementById('cd-timer');
-  t.classList.toggle('hidden');
-  const isHidden = t.classList.contains('hidden');
-  localStorage.setItem('wr_countdown_on', isHidden ? '0' : '1');
-  document.getElementById('cd-toggle-btn').textContent = isHidden ? '보기' : '숨기기';
-  if(!isHidden) startCountdown();
-}
-
-function startCountdown(){
-  document.getElementById('cd-timer').classList.remove('hidden');
-  document.getElementById('cd-toggle-btn').textContent='숨기기';
-  if(cdInterval) clearInterval(cdInterval);
-  function tick(){
+  function tick() {
     const diff = endTime - Date.now();
-    if(diff <= 0){
-      ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id => document.getElementById(id).textContent='00');
+    if (diff <= 0) {
+      ['cd-days', 'cd-hours', 'cd-mins', 'cd-secs'].forEach(id => document.getElementById(id).textContent = '00');
       clearInterval(cdInterval);
+      revealRankingShow();
       return;
     }
-    const days = Math.floor(diff/86400000),
-          hours = Math.floor((diff%86400000)/3600000),
-          mins = Math.floor((diff%3600000)/60000),
-          secs = Math.floor((diff%60000)/1000);
-    document.getElementById('cd-days').textContent=String(days).padStart(2,'0');
-    document.getElementById('cd-hours').textContent=String(hours).padStart(2,'0');
-    document.getElementById('cd-mins').textContent=String(mins).padStart(2,'0');
-    document.getElementById('cd-secs').textContent=String(secs).padStart(2,'0');
+    const days = Math.floor(diff / 86400000),
+          hours = Math.floor((diff % 86400000) / 3600000),
+          mins = Math.floor((diff % 3600000) / 60000),
+          secs = Math.floor((diff % 60000) / 1000);
+
+    document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+    document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+    document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+
+    const timer = document.getElementById('cd-timer');
+    if (diff < 86400000) timer.classList.add('cd-urgent');
+    else timer.classList.remove('cd-urgent');
   }
   tick();
   cdInterval = setInterval(tick, 1000);
 }
 
-// 페이지 로드 시 초기화
+function revealRankingShow() {
+  const mainWrapper = document.getElementById('main-challenge-wrapper');
+  const rankingBoard = document.getElementById('ranking-board');
+  const fab = document.getElementById('main-fab');
+
+  calculateAndBuildLeaderboard();
+
+  if (mainWrapper) {
+    mainWrapper.style.opacity = '0';
+    setTimeout(() => { mainWrapper.style.display = 'none'; }, 500);
+  }
+  if (fab) fab.style.display = 'none';
+
+  if (rankingBoard) {
+    setTimeout(() => {
+      rankingBoard.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 400);
+  }
+}
+
+function calculateAndBuildLeaderboard() {
+  const scores = {};
+  COMPANIES.forEach(c => scores[c.id] = { name: c.name, score: 0 });
+  STATE_BUBBLES.forEach(b => { if (scores[b.companyId]) scores[b.companyId].score += 10; });
+
+  const sorted = Object.values(scores).sort((a,b) => b.score - a.score);
+
+  if(sorted[0]) {
+    document.getElementById('podium-1st-name').textContent = sorted[0].name;
+    document.getElementById('podium-1st-score').textContent = `${sorted[0].score} pts`;
+  }
+  if(sorted[1]) {
+    document.getElementById('podium-2nd-name').textContent = sorted[1].name;
+    document.getElementById('podium-2nd-score').textContent = `${sorted[1].score} pts`;
+  }
+  if(sorted[2]) {
+    document.getElementById('podium-3rd-name').textContent = sorted[2].name;
+    document.getElementById('podium-3rd-score').textContent = `${sorted[2].score} pts`;
+  }
+
+  const subList = document.getElementById('sub-rank-list');
+  if(subList) {
+    subList.innerHTML = '';
+    for(let i=3; i<sorted.length; i++) {
+      if(!sorted[i]) break;
+      const item = document.createElement('div');
+      item.className = 'rank-item';
+      item.innerHTML = `
+        <div><span class="rank-badge">${i+1}</span> <span style="margin-left:10px; font-weight:500;">${sorted[i].name}</span></div>
+        <div style="font-weight:700; color:var(--accent); font-family:'DM Mono',monospace;">${sorted[i].score} pts</div>
+      `;
+      subList.appendChild(item);
+    }
+  }
+}
+
+function toggleCountdown() {
+  const isCurrentlyOn = localStorage.getItem('wr_countdown_on') !== '0';
+  localStorage.setItem('wr_countdown_on', isCurrentlyOn ? '0' : '1');
+  updateCountdownBar();
+}
+
+function initCountdown() {
+  const on = localStorage.getItem('wr_countdown_on'), endDate = localStorage.getItem('wr_enddate');
+  if (on === null) localStorage.setItem('wr_countdown_on', '1');
+  if (!endDate) localStorage.setItem('wr_enddate', '2026-07-31T23:59:59');
+  updateCountdownBar();
+}
+
+// ==========================================
+// 3. RENDER INTERFACES & COMPOSITE FILTERING
+// ==========================================
+function renderCompanyTabs() {
+  const container = document.getElementById('company-tabs');
+  if (!container) return;
+  const todayCounts = getTodayCountsByCompany();
+  
+  let html = `<div class="co-tab ${ACTIVE_COMPANY_FILTER==='all'?'active':''}" onclick="setCompanyFilter('all')">전체보기</div>`;
+  COMPANIES.forEach((c, idx) => {
+    html += `
+      <div class="co-tab ${ACTIVE_COMPANY_FILTER === c.id ? 'active' : ''}" onclick="setCompanyFilter('${c.id}')">
+        <div class="co-dot" style="background:var(--c${idx})"></div>
+        ${c.name}
+      </div>`;
+  });
+  container.innerHTML = html;
+  renderColumnHeaders(todayCounts);
+}
+
+function getTodayCountsByCompany() {
+  const counts = {};
+  COMPANIES.forEach(c => counts[c.id] = 0);
+  const todayStr = new Date().toISOString().split('T')[0];
+  STATE_BUBBLES.forEach(b => {
+    if(b.date && b.date.startsWith(todayStr) && counts[b.companyId] !== undefined) counts[b.companyId]++;
+  });
+  return counts;
+}
+
+function renderColumnHeaders(todayCounts) {
+  COMPANIES.forEach((c, idx) => {
+    const colHead = document.getElementById(`col-head-${c.id}`);
+    if (!colHead) return;
+    const count = todayCounts[c.id] || 0;
+    colHead.className = "col-header";
+    
+    if (count >= FIRE_MIN) {
+      colHead.classList.add('burning');
+      const heat = Math.min((count - FIRE_MIN) / (FIRE_MAX - FIRE_MIN || 1), 1);
+      colHead.style.setProperty('--heat', heat);
+      colHead.innerHTML = `
+        <div class="co-dot" style="background:var(--c${idx})"></div>
+        <span class="co-name">${c.name}</span>
+        <div class="col-flames"><span class="flame">🔥</span></div>
+        <span class="col-count">${STATE_BUBBLES.filter(b=>b.companyId===c.id).length}</span>
+        <div class="col-ember" style="left:50%"></div>
+      `;
+    } else {
+      colHead.style.background = '#fff';
+      colHead.style.color = 'var(--navy)';
+      colHead.style.borderBottom = `3px solid var(--c${idx})`;
+      colHead.innerHTML = `
+        <div class="co-dot" style="background:var(--c${idx})"></div>
+        <span class="co-name">${c.name}</span>
+        <span class="col-count">${STATE_BUBBLES.filter(b=>b.companyId===c.id).length}</span>
+      `;
+    }
+  });
+}
+
+function renderRuleFilterBar() {
+  const bar = document.getElementById('rule-filter-bar');
+  if (!bar) return;
+  bar.innerHTML = '<div class="rule-filter-label">Rules</div>';
+  WINNING_RULES.forEach(r => {
+    const chip = document.createElement('div');
+    chip.className = `rule-chip ${ACTIVE_RULE_FILTERS.has(r.id)?'active':''}`;
+    chip.textContent = r.title;
+    chip.onclick = () => {
+      if (ACTIVE_RULE_FILTERS.has(r.id)) ACTIVE_RULE_FILTERS.delete(r.id);
+      else ACTIVE_RULE_FILTERS.add(r.id);
+      renderRuleFilterBar();
+      applyFilters();
+    };
+    bar.appendChild(chip);
+  });
+}
+
+function renderTagFilterBar() {
+  const bar = document.getElementById('tag-filter-bar');
+  if (!bar) return;
+  bar.innerHTML = '<div class="tag-filter-label">Tags</div>';
+  
+  const tagMap = {};
+  STATE_BUBBLES.forEach(b => { if(b.tags) b.tags.forEach(t => tagMap[t] = (tagMap[t]||0)+1); });
+  
+  Object.keys(tagMap).sort((a,b)=>tagMap[b]-tagMap[a]).slice(0,10).forEach(tag => {
+    const chip = document.createElement('div');
+    chip.className = `tag-filter-chip ${ACTIVE_TAG_FILTERS.has(tag)?'active':''}`;
+    chip.innerHTML = `#${tag} <span class="tag-count">${tagMap[tag]}</span>`;
+    chip.onclick = () => {
+      if(ACTIVE_TAG_FILTERS.has(tag)) ACTIVE_TAG_FILTERS.delete(tag);
+      else ACTIVE_TAG_FILTERS.add(tag);
+      renderTagFilterBar();
+      applyFilters();
+    };
+    bar.appendChild(chip);
+  });
+}
+
+function setCompanyFilter(coId) {
+  ACTIVE_COMPANY_FILTER = coId;
+  renderCompanyTabs();
+  applyFilters();
+}
+
+function applyFilters() {
+  COMPANIES.forEach(c => {
+    const col = document.getElementById(`col-cards-${c.id}`);
+    if (!col) return;
+    
+    if (ACTIVE_COMPANY_FILTER !== 'all' && ACTIVE_COMPANY_FILTER !== c.id) {
+      col.closest('.chain')?.style.setProperty('display', 'none');
+      return;
+    } else {
+      col.closest('.chain')?.style.removeProperty('display');
+    }
+    
+    const wraps = col.querySelectorAll('.bubble-wrap');
+    let visibleInCol = 0;
+    
+    wraps.forEach(wrap => {
+      const bubbleEl = wrap.querySelector('.bubble');
+      if(!bubbleEl) return;
+      const b = STATE_BUBBLES.find(x => String(x.id) === String(bubbleEl.getAttribute('data-id')));
+      
+      let match = true;
+      if (ACTIVE_RULE_FILTERS.size > 0 && (!b || !ACTIVE_RULE_FILTERS.has(b.ruleId))) match = false;
+      if (ACTIVE_TAG_FILTERS.size > 0 && (!b || !b.tags || !Array.from(ACTIVE_TAG_FILTERS).every(t => b.tags.includes(t)))) match = false;
+      
+      if (match) { wrap.style.removeProperty('display'); visibleInCol++; }
+      else { wrap.style.setProperty('display', 'none'); }
+    });
+  });
+}
+
+// ==========================================
+// 4. DATA GRAPH & DOM BUILDER
+// ==========================================
+function buildBoardGrid() {
+  const grid = document.getElementById('board-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  COMPANIES.forEach(c => {
+    const chain = document.createElement('div');
+    chain.className = 'chain';
+    chain.innerHTML = `<div id="col-head-${c.id}" class="col-header"></div><div id="col-cards-${c.id}" style="width:100%"></div>`;
+    grid.appendChild(chain);
+  });
+  
+  renderCompanyTabs();
+  
+  COMPANIES.forEach((c, cIdx) => {
+    const colCards = document.getElementById(`col-cards-${c.id}`);
+    if (!colCards) return;
+    
+    const roots = STATE_BUBBLES.filter(b => b.companyId === c.id && (!b.parentId || b.parentId === ''));
+    if (roots.length === 0) {
+      colCards.innerHTML = '<div class="empty-col"><div class="e-icon">💬</div><div class="e-text">첫 번째 실천 말풍선을 등록해보세요!</div></div>';
+    } else {
+      roots.forEach(root => { buildChainRecursive(colCards, root, cIdx); });
+    }
+    
+    STATE_PENDINGS.filter(p => p.companyId === c.id).forEach(p => {
+      const pEl = document.createElement('div');
+      pEl.className = 'pending-bubble';
+      pEl.innerHTML = `
+        <div class="pending-avatar">⏳</div>
+        <div class="pending-info">
+          <div class="pending-name">${escapeHtml(p.name)} ${escapeHtml(p.role)}</div>
+          <div class="pending-from">From. ${escapeHtml(p.parentName || '선배')}</div>
+        </div>
+        <div class="pending-timer" id="p-timer-${p.id}">24:00</div>
+      `;
+      colCards.appendChild(pEl);
+      startPendingTimer(p.id, p.timestamp);
+    });
+  });
+  
+  applyFilters();
+  renderRuleFilterBar();
+  renderTagFilterBar();
+  updateStatsSummary();
+}
+
+function buildChainRecursive(container, bubble, coIdx) {
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-wrap';
+  
+  const ruleObj = WINNING_RULES.find(r => r.id === bubble.ruleId);
+  const ruleTitle = ruleObj ? ruleObj.title : '행동강령 실천';
+  
+  let tagsHtml = '';
+  if (bubble.tags) bubble.tags.forEach(t => { tagsHtml += `<span class="tag">#${escapeHtml(t)}</span>`; });
+  
+  const likedArr = JSON.parse(localStorage.getItem('wr_liked_ids') || '[]');
+  const isLiked = likedArr.includes(String(bubble.id));
+  
+  wrap.innerHTML = `
+    <div class="bubble ${!bubble.parentId?'root-bubble':''}" data-id="${bubble.id}" style="border-top: 4px solid var(--c${coIdx})">
+      <div class="bubble-head">
+        <div class="bubble-avatar" style="color:var(--c${coIdx}); border-color:var(--c${coIdx})">${escapeHtml(bubble.name.slice(0,2))}</div>
+        <div class="bubble-info">
+          <div class="bubble-name">${escapeHtml(bubble.name)} <span class="bubble-role">${escapeHtml(bubble.role)}</span></div>
+          <div class="bubble-footer">${bubble.date ? bubble.date.split(' ')[0] : ''}</div>
+        </div>
+        <div class="bubble-actions">
+          <button class="action-btn edit" onclick="editBubble('${bubble.id}')">✏</button>
+          <button class="action-btn del" onclick="deleteBubble('${bubble.id}')">×</button>
+        </div>
+      </div>
+      <div class="bubble-rule" style="background:var(--c${coIdx}d); color:var(--text)">💡 ${escapeHtml(ruleTitle)}</div>
+      <div class="bubble-comment">${escapeHtml(bubble.comment)}</div>
+      ${tagsHtml ? `<div class="bubble-tags">${tagsHtml}</div>` : ''}
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px">
+        <div class="bubble-nominee">${bubble.nomineeName ? `👉 다음 주자: <b>${escapeHtml(bubble.nomineeName)}</b>` : ''}</div>
+        <button class="like-btn ${isLiked?'liked':''}" onclick="toggleLike('${bubble.id}', this)">
+          <span class="heart">♥</span> 좋아요 <span class="like-count">${bubble.likes || 0}</span>
+        </button>
+      </div>
+    </div>
+  `;
+  container.appendChild(wrap);
+  
+  const children = STATE_BUBBLES.filter(b => String(b.parentId) === String(bubble.id));
+  if (children.length > 0) {
+    const conn = document.createElement('div');
+    conn.className = 'connector';
+    container.appendChild(conn);
+    children.forEach(child => { buildChainRecursive(container, child, coIdx); });
+  }
+}
+
+function updateStatsSummary() {
+  document.getElementById('stat-total-bubbles').textContent = STATE_BUBBLES.length;
+  document.getElementById('stat-active-users').textContent = new Set(STATE_BUBBLES.map(b => b.name)).size;
+  document.getElementById('stat-total-chains').textContent = STATE_BUBBLES.filter(b => b.parentId && b.parentId !== '').length;
+  
+  const compMap = {}; COMPANIES.forEach(c => compMap[c.id] = 0);
+  STATE_BUBBLES.forEach(b => { if(compMap[b.companyId]!==undefined) compMap[b.companyId]++; });
+  let topCo = '—', max = 0;
+  COMPANIES.forEach(c => { if(compMap[c.id] > max) { max = compMap[c.id]; topCo = c.name; } });
+  document.getElementById('stat-top-company').textContent = topCo;
+}
+
+function startPendingTimer(id, timestamp) {
+  const el = document.getElementById(`p-timer-${id}`);
+  if(!el) return;
+  const limit = new Date(timestamp).getTime() + 86400000;
+  function update() {
+    const diff = limit - Date.now();
+    if(diff <= 0) { el.textContent = '만료'; return; }
+    el.textContent = `${String(Math.floor(diff/3600000)).padStart(2,'0')}:${String(Math.floor((diff%3600000)/60000)).padStart(2,'0')}`;
+  }
+  update(); setInterval(update, 60000);
+}
+
+// ==========================================
+// 5. EVENT HANDLERS & WRITERS TRANSACTIONS
+// ==========================================
+function toggleLike(id, btn) {
+  let likedIds = JSON.parse(localStorage.getItem('wr_liked_ids') || '[]');
+  const idx = likedIds.indexOf(String(id)), action = idx > -1 ? 'unlike' : 'like';
+  if (action === 'like') likedIds.push(String(id)); else likedIds.splice(idx, 1);
+  localStorage.setItem('wr_liked_ids', JSON.stringify(likedIds));
+  btn.classList.toggle('liked');
+  
+  const cnt = btn.querySelector('.like-count');
+  if(cnt) cnt.textContent = action === 'like' ? (parseInt(cnt.textContent)||0)+1 : Math.max(0, (parseInt(cnt.textContent)||0)-1);
+  
+  const url = getBackendUrl(); if(!url) return;
+  fetch(`${url}?action=like&id=${id}&likeAction=${action}`, { method: 'POST', mode: 'no-cors' });
+}
+
+function openForm(parentId = '', editId = '') {
+  const modal = document.getElementById('form-modal');
+  document.getElementById('bubble-form').reset();
+  FORM_TAGS = []; renderFormTagPills();
+  document.getElementById('form-parent-id').value = parentId;
+  document.getElementById('form-edit-id').value = editId;
+  
+  const selectRule = document.getElementById('form-rule');
+  selectRule.innerHTML = '<option value="" disabled selected>행동강령을 선택하세요</option>';
+  WINNING_RULES.forEach(r => { selectRule.innerHTML += `<option value="${r.id}">${r.title}</option>`; });
+  
+  const coSelRow = document.getElementById('form-co-select'); coSelRow.innerHTML = '';
+  COMPANIES.forEach((c, idx) => {
+    coSelRow.innerHTML += `
+      <div class="co-select-card" id="f-co-card-${c.id}" onclick="selectFormCompany('${c.id}')">
+        <div class="co-select-dot" style="background:var(--c${idx})"></div>
+        <div class="co-select-name">${c.name}</div>
+      </div>`;
+  });
+  
+  if (editId) {
+    document.getElementById('form-modal-title').textContent = '✏ 실천 이야기 수정하기';
+    const b = STATE_BUBBLES.find(x => String(x.id) === String(editId));
+    if (b) {
+      selectFormCompany(b.companyId);
+      document.getElementById('form-name').value = b.name;
+      document.getElementById('form-role').value = b.role;
+      document.getElementById('form-rule').value = b.ruleId;
+      document.getElementById('form-comment').value = b.comment;
+      if(b.tags) { FORM_TAGS = [...b.tags]; renderFormTagPills(); }
+    }
+  } else {
+    document.getElementById('form-modal-title').textContent = parentId ? '🔗 이어달리기 말풍선 등록' : '✍ 새로운 실천 등록하기';
+    selectFormCompany('c0');
+  }
+  modal.classList.add('open');
+}
+
+let SELECTED_FORM_COMPANY = 'c0';
+function selectFormCompany(coId) {
+  SELECTED_FORM_COMPANY = coId;
+  document.querySelectorAll('.co-select-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`f-co-card-${coId}`)?.classList.add('selected');
+}
+function closeForm() { document.getElementById('form-modal').classList.remove('open'); }
+function closeFormOnOverlay(e) { if(e.target.id === 'form-modal') closeForm(); }
+function focusTagInput() { document.getElementById('form-tag-input').focus(); }
+function handleTagInput(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault(); const input = document.getElementById('form-tag-input');
+    const val = input.value.replace(/#/g, '').trim();
+    if (val && !FORM_TAGS.includes(val)) { FORM_TAGS.push(val); renderFormTagPills(); }
+    input.value = '';
+  }
+}
+function removeFormTag(idx) { FORM_TAGS.splice(idx, 1); renderFormTagPills(); }
+function renderFormTagPills() {
+  const container = document.getElementById('tag-pills-container'); container.innerHTML = '';
+  FORM_TAGS.forEach((t, i) => { container.innerHTML += `<span class="tag-pill">#${escapeHtml(t)} <button type="button" onclick="removeFormTag(${i})">×</button></span>`; });
+}
+
+function submitBubbleForm(e) {
+  e.preventDefault(); const url = getBackendUrl(); if (!url) return;
+  const editId = document.getElementById('form-edit-id').value;
+  const parentId = document.getElementById('form-parent-id').value;
+  
+  const payload = {
+    action: editId ? 'update' : 'create', id: editId || '', parentId: parentId || '', companyId: SELECTED_FORM_COMPANY,
+    name: document.getElementById('form-name').value.trim(), role: document.getElementById('form-role').value.trim(),
+    ruleId: document.getElementById('form-rule').value, comment: document.getElementById('form-comment').value.trim(),
+    tags: FORM_TAGS.join(','), nomineeName: document.getElementById('form-nominee-name').value.trim(), nomineeDept: document.getElementById('form-nominee-dept').value.trim()
+  };
+  
+  showSync(true); closeForm();
+  fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    .then(() => { showToast("등록/수정이 완료되었습니다."); setTimeout(loadFromSheets, 1500); });
+}
+
+function editBubble(id) { openForm('', id); }
+function deleteBubble(id) {
+  if(!confirm("정말로 이 실천 말풍선을 삭제하시겠습니까?")) return;
+  const url = getBackendUrl(); if(!url) return;
+  showSync(true);
+  fetch(`${url}?action=delete&id=${id}`, { method: 'POST', mode: 'no-cors' }).then(() => { showToast("삭제 완료"); setTimeout(loadFromSheets, 1500); });
+}
+
+// ==========================================
+// 6. CONTROL PANEL & SYNC LOADER
+// ==========================================
+function openSettingsAuth() { document.getElementById('settings-auth-modal').classList.add('open'); }
+function closeSettingsAuth() { document.getElementById('settings-auth-modal').classList.remove('open'); }
+function verifySettingsAuth() {
+  if(document.getElementById('settings-auth-pwd').value === 'sangsangin337!') { closeSettingsAuth(); openSettingsPanel(); }
+  else alert("인증 비밀번호가 다릅니다.");
+}
+function openSettingsPanel() {
+  document.getElementById('set-script-url').value = getBackendUrl();
+  document.getElementById('set-end-date').value = getEndDate();
+  document.getElementById('set-show-countdown').checked = isCountdownVisible();
+  document.getElementById('settings-panel').classList.add('open');
+}
+function closeSettings() { document.getElementById('settings-panel').classList.remove('open'); }
+function saveSettings() {
+  localStorage.setItem('wr_script_url', document.getElementById('set-script-url').value.trim());
+  localStorage.setItem('wr_enddate', document.getElementById('set-end-date').value);
+  localStorage.setItem('wr_countdown_on', document.getElementById('set-show-countdown').checked ? '1' : '0');
+  closeSettings(); showToast("설정 저장 완료"); updateCountdownBar(); loadFromSheets();
+}
+function clearLocalCache() { localStorage.clear(); location.reload(); }
+
+function loadFromSheets() {
+  const url = getBackendUrl(); showSync(true);
+  try {
+    const b = localStorage.getItem('wr_cached_bubbles'), p = localStorage.getItem('wr_cached_pendings');
+    if(b) STATE_BUBBLES = JSON.parse(b); if(p) STATE_PENDINGS = JSON.parse(p);
+    if(b) buildBoardGrid();
+  } catch(e){}
+  if (!url) { showSync(false); return; }
+  fetch(`${url}?action=read`).then(res => res.json()).then(data => {
+    if (data.status === 'success') {
+      STATE_BUBBLES = data.bubbles || []; STATE_PENDINGS = data.pendings || [];
+      localStorage.setItem('wr_cached_bubbles', JSON.stringify(STATE_BUBBLES));
+      localStorage.setItem('wr_cached_pendings', JSON.stringify(STATE_PENDINGS));
+      buildBoardGrid();
+    }
+    showSync(false);
+  }).catch(() => showSync(false));
+}
+
+function escapeHtml(str) {
+  if(!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  startCountdown();
-  // 기본 전체 상태로 필터 초기화 실행
-  filterCards();
+  document.getElementById('logo-img').src = COMPANIES[0].logo;
+  initCountdown();
+  loadFromSheets();
 });
 </script>
 </body>
