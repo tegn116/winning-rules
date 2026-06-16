@@ -1113,7 +1113,7 @@ function openForm(parentId='',fromName='',preCompany=''){
     const el=document.getElementById(id);if(el)el.value='';
   });
   // 카드 초기화
-  for(let i=0;i<5;i++){
+  for(let i=0;i<6;i++){
     const card=document.getElementById('co-card-'+i);
     if(card){card.classList.remove('selected');card.style.borderColor='';card.style.background='#fff';}
   }
@@ -1229,16 +1229,17 @@ function getTopLiked(){
 }
 
 async function submitEntry(){
-  const company=document.getElementById('f-company').value;
-  const name=document.getElementById('f-name').value.trim();
-  const role=document.getElementById('f-role').value.trim();
-  const comment=document.getElementById('f-comment').value.trim();
-  const rule=document.getElementById('f-rule').value;
-  const nomineeName=document.getElementById('f-nominee').value.trim();
-  const nomineeRole=document.getElementById('f-nominee-role').value.trim();
-  const nominee=nomineeName+' '+nomineeRole; // 이름+직위 합치기
-  const parentId=document.getElementById('f-parent-id').value;
-  if(!company||!name||!comment||!rule){showToast('⚠️ 필수 항목을 모두 입력해주세요','error');return;}
+  const company=(document.getElementById('f-company')?.value||'').trim();
+  const name=(document.getElementById('f-name')?.value||'').trim();
+  const role=(document.getElementById('f-role')?.value||'').trim();
+  const comment=(document.getElementById('f-comment')?.value||'').trim();
+  const rule=document.getElementById('f-rule')?.value||'';
+  const nomineeName=(document.getElementById('f-nominee')?.value||'').trim();
+  const nomineeRole=(document.getElementById('f-nominee-role')?.value||'').trim();
+  const nominee=nomineeName+' '+nomineeRole;
+  const parentId=document.getElementById('f-parent-id')?.value||'';
+  if(!company){showToast('⚠️ 회사를 선택해주세요','error');return;}
+  if(!name||!comment||!rule){showToast('⚠️ 필수 항목을 모두 입력해주세요','error');return;}
   if(nominee.trim().length<2){showToast('⚠️ 지목할 동료의 이름과 직위를 모두 입력해주세요','error');return;}
   // 중복 참여 체크: 같은 회사 + 같은 이름은 1번만
   const alreadyIn = DATA.find(d => d.company === company && d.name.trim() === name.trim());
