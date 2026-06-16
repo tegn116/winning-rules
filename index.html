@@ -414,6 +414,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div class="stat-item"><div class="stat-num" id="s-c2" style="color:var(--c2)">0</div><div class="stat-label">시너지이노베이션</div></div>
   <div class="stat-item"><div class="stat-num" id="s-c3" style="color:var(--c3)">0</div><div class="stat-label">메디카코리아</div></div>
   <div class="stat-item"><div class="stat-num" id="s-c4" style="color:var(--c4)">0</div><div class="stat-label">선박기계</div></div>
+  <div class="stat-item"><div class="stat-num" id="s-c5" style="color:var(--c5)">0</div><div class="stat-label">플러스저축은행</div></div>
 </div>
 
 <!-- TOP LIKED -->
@@ -1011,7 +1012,7 @@ function renderColumn(co, ci){
 
 function render(dirtyCompany=null){
   // 1. 통계 업데이트 (항상 빠름)
-  const counts=[0,0,0,0,0];
+  const counts=[0,0,0,0,0,0];
   DATA.forEach(d=>{const i=coIdx(d.company);if(i>=0)counts[i]++;});
   document.getElementById('s-total').textContent=DATA.length;
   counts.forEach((c,i)=>{
