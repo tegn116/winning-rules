@@ -367,7 +367,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div class="nav-actions">
     <button class="btn" onclick="loadFromSheets()">🔄 새로고침</button>
     <button class="btn" onclick="openSettingsAuth()">⚙ 설정</button>
-    <button class="btn btn-accent" onclick="openForm()">✍ 참여하기</button>
   </div>
 </nav>
 
@@ -803,7 +802,11 @@ async function loadFromSheets(){
 // ===== RENDER =====
 function getInitials(name){if(!name)return'?';const p=name.trim().split(/\s+/);return p.length>=2?p[0][0]+p[1][0]:name.slice(0,2);}
 function coIdx(company){return COMPANIES.indexOf(company);}
-function formatDate(ts){if(!ts)return'';return new Date(ts).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});}
+function formatDate(ts){
+  if(!ts)return'';
+  const d=new Date(ts);
+  return d.toLocaleDateString('ko-KR',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false});
+}
 function formatTimer(createdAt){
   const diff=(createdAt+48*3600000)-Date.now();
   if(diff<=0)return{text:'기한초과',urgent:true};
@@ -841,6 +844,15 @@ function renderBubble(node,ci,depth=0){
     const t=formatTimer(node.createdAt);
     const expired=isExpired(node.createdAt);
     const pc=CO_COLORS[ci];
+    
+    // 5분 대기 체크
+    const elapsedSinceNomination = Date.now() - node.createdAt;
+    const FIVE_MIN = 5 * 60 * 1000;
+    const stillWaiting = elapsedSinceNomination < FIVE_MIN;
+    const waitRemainSec = stillWaiting ? Math.ceil((FIVE_MIN - elapsedSinceNomination)/1000) : 0;
+    const waitMin = Math.floor(waitRemainSec/60);
+    const waitSec = waitRemainSec%60;
+    
     if(expired){
       return `${depth>0?`<div class="connector" style="background:${pc}40;opacity:.3"></div>`:''}
       <div class="bubble-wrap">
@@ -854,6 +866,27 @@ function renderBubble(node,ci,depth=0){
         </div>
       </div>`;
     }
+    
+    // 5분 대기 중일 때는 잠금 표시
+    if(stillWaiting){
+      return `<div class="bubble-wrap">
+        <div class="pending-bubble"
+          style="cursor:not-allowed;border:1.5px dashed ${pc}80;background:${CO_DIM[ci]};flex-direction:column;gap:6px;padding:14px 16px;opacity:.7">
+          <div style="font-size:12px;font-weight:600;color:${pc};text-align:center">🔒 작성 대기 중 (어뷰징 방지)</div>
+          <div style="display:flex;align-items:center;gap:10px;width:100%">
+            <div class="pending-avatar" style="background:#fff;font-size:16px;flex-shrink:0">⏳</div>
+            <div class="pending-info">
+              <div class="pending-name" style="color:var(--navy)">${node.nomineeName}</div>
+              <div class="pending-from" style="color:var(--text3)">${node.fromName}님의 지목</div>
+            </div>
+            <div class="pending-timer" style="color:${pc};flex-shrink:0;font-weight:700;font-family:'DM Mono',monospace">${waitMin}m ${waitSec}s</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);text-align:center">5분 후 작성 가능</div>
+        </div>
+        <div class="connector" style="background:${pc}40"></div>
+      </div>`;
+    }
+    
     return `<div class="bubble-wrap">
       <div class="pending-bubble"
         onclick="openFormFromPending('${node.company}','${node.parentId}','${node.fromName}','${node.nomineeName}')"
@@ -883,6 +916,7 @@ function renderBubble(node,ci,depth=0){
   const tags=(node.hashtags||[]).map(t=>`<span class="tag">#${t.replace(/^#/,'')}</span>`).join('');
   const dateStr=formatDate(node.createdAt);
   const isRoot=depth===0;
+  const postExpired=isExpired(node.createdAt); // 48시간 경과 여부
   const likeKey='like_'+node.id;
   const likedBy=JSON.parse(localStorage.getItem(likeKey)||'[]');
   const sessionId=getSessionId();
@@ -895,7 +929,8 @@ function renderBubble(node,ci,depth=0){
   <div class="bubble-wrap">
     ${childrenHtml}
     ${(node.children||[]).length>0?`<div class="connector" style="background:${c}40"></div>`:''}
-    <div class="bubble ${isRoot?'root-bubble':''}" style="border-color:${isRoot?c:''}">
+    <div class="bubble ${isRoot?'root-bubble':''} ${postExpired?'expired':''}" style="border-color:${isRoot?c:''}">
+      ${postExpired?`<div style="position:absolute;top:8px;right:8px;font-size:9px;background:var(--bg3);color:var(--text3);padding:2px 7px;border-radius:10px;border:1px solid var(--border);font-weight:600">⏱ 만료 · 집계 제외</div>`:''}
       <div class="bubble-head">
         <div class="bubble-avatar" style="background:${av[0]};color:${av[1]};border-color:${c}">${getInitials(node.name)}</div>
         <div class="bubble-info">
@@ -978,26 +1013,26 @@ function renderColumn(co, ci){
 
   const roots=buildChain(co);
   const c=CO_COLORS[ci];
-  const cnt=DATA.filter(d=>d.company===co).length;
+  const cnt=DATA.filter(d=>d.company===co && !isExpired(d.createdAt)).length;
   const todayN=getTodayCount(co);
   const burning=todayN>=FIRE_MIN;
   const heat=getHeat(todayN);
   const flames=burning?`<span class="col-flames" style="transform:scale(${getFlameScale(todayN).toFixed(2)})"><span class="flame">🔥</span></span>`:'';
   const embers=todayN>=8?`<span class="col-ember" style="right:64px;animation-delay:0s"></span><span class="col-ember" style="right:50px;animation-delay:.5s"></span><span class="col-ember" style="right:78px;animation-delay:.95s"></span>`:'';
   const hasRoot=DATA.some(d=>d.company===co && !d.parentId);
-  const rightSlot=burning?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`:(hasRoot?`<span style="margin-left:auto;font-size:10px;opacity:.5">✓ 진행중</span>`:`<span style="margin-left:auto;font-size:10px;opacity:.7;font-weight:600">✍ 첫 게시글 작성</span>`);
-  const headStyle=burning?`cursor:pointer;--heat:${heat.toFixed(2)}`:`background:${CO_DIM[ci]};color:${c};cursor:pointer`;
+  const rightSlot=burning?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`:'';
+  const headStyle=burning?`cursor:default;--heat:${heat.toFixed(2)}`:`background:${CO_DIM[ci]};color:${c};cursor:default`;
   const countStyle=burning?'':`color:${c}`;
-  const titleText=burning?`${co} 챌린지 참여하기 · 오늘 ${todayN}개 작성되어 불타오르는 중!`:`${co} 챌린지 참여하기`;
+  const titleText=`${co} (${cnt}명 참여 중)`;
 
   const html=`<div>
-    <div class="col-header ${burning?'burning':''}" style="${headStyle}" onclick="tryOpenForm('${co}')" title="${titleText}">
+    <div class="col-header ${burning?'burning':''}" style="${headStyle}" title="${titleText}">
       <div class="co-dot" style="background:${c}"></div>
       <span class="co-name">${co}</span>
       ${flames}
-      <span class="col-count" style="${countStyle}">${cnt}명</span>
       ${rightSlot}
       ${embers}
+      <span class="col-count" style="${countStyle};margin-left:auto">${cnt}명</span>
     </div>
     <div class="chain" id="chain-${co.replace(/\s/g,'-')}">
       ${roots.length===0
@@ -1011,10 +1046,15 @@ function renderColumn(co, ci){
 }
 
 function render(dirtyCompany=null){
-  // 1. 통계 업데이트 (항상 빠름)
+  // 1. 통계 업데이트 (만료된 게시글 제외)
   const counts=[0,0,0,0,0,0];
-  DATA.forEach(d=>{const i=coIdx(d.company);if(i>=0)counts[i]++;});
-  document.getElementById('s-total').textContent=DATA.length;
+  DATA.forEach(d=>{
+    if(isExpired(d.createdAt))return; // 48시간 경과 시 카운팅 제외
+    const i=coIdx(d.company);
+    if(i>=0)counts[i]++;
+  });
+  const totalActive = counts.reduce((a,b)=>a+b,0);
+  document.getElementById('s-total').textContent=totalActive;
   counts.forEach((c,i)=>{
     const el=document.getElementById('s-c'+i);
     if(!el)return;
@@ -1264,6 +1304,22 @@ async function submitEntry(){
     // 지목 횟수 3회 제한
     const nomineeCount=DATA.filter(d=>d.nomineeName&&d.nomineeName.trim()===nominee.trim()&&d.company===company).length;
     if(nomineeCount>=NOMINEE_LIMIT){showToast('⚠️ '+nominee+'님은 이미 3회 지목되었습니다. 다른 분을 지목해주세요.','error');return;}
+  }
+  
+  // ⭐ 5분 대기 어뷰징 방지: pending에서 진입한 경우, 지목 후 5분 경과 체크
+  if(parentId){
+    const parent = DATA.find(d=>d.id===parentId);
+    if(parent){
+      const elapsed = Date.now() - parent.createdAt;
+      const FIVE_MIN = 5 * 60 * 1000;
+      if(elapsed < FIVE_MIN){
+        const waitSec = Math.ceil((FIVE_MIN - elapsed) / 1000);
+        const m = Math.floor(waitSec/60);
+        const s = waitSec%60;
+        showToast(`⏱ 지목받은 후 5분 후에 작성 가능합니다. (${m}분 ${s}초 남음)`,'error');
+        return;
+      }
+    }
   }
   
   // parentId 자동 설정: pending에서 온 경우 사용, 아니면 빈 값 (= 첫 참여자가 root)
@@ -1837,6 +1893,16 @@ window.addEventListener('click',e=>{
 // ===== AUTO REFRESH =====
 // 3분마다 자동 새로고침 (탭 활성 상태일 때만)
 setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},180000);
+// 1분마다 화면만 재렌더 (5분 대기 카운트다운 + 만료 처리)
+setInterval(()=>{
+  if(document.visibilityState==='visible' && DATA.length>0){
+    // 전체 캐시 무효화 후 재렌더
+    _cache.dataHash={};
+    _cache.chainHTML={};
+    _cache.sortOrder=[];
+    render();
+  }
+},60000);
 
 // ===== 이메일 발송 =====
 function generateNomineeLink(parentId, nomineeName, company, rule, comment, fromName) {
