@@ -17,6 +17,7 @@
   --c2:#E85D26;--c2d:rgba(232,93,38,.10);   /* 시너지이노베이션 */
   --c3:#2E9E6B;--c3d:rgba(46,158,107,.10);  /* 메디카코리아 */
   --c4:#1565C0;--c4d:rgba(21,101,192,.10);  /* 선박기계 */
+  --c5:#8B5CF6;--c5d:rgba(139,92,246,.12);  /* 플러스저축은행 */
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -53,7 +54,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .hero-pills{display:flex;gap:7px;flex-wrap:wrap}
 .hero-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
 .hero-char{position:relative;z-index:1}
-.hero-char img{width:210px;height:auto;object-fit:contain;animation:float 3.5s ease-in-out infinite;filter:drop-shadow(0 6px 20px rgba(0,191,182,.18))}
+.hero-char img{width:210px;height:auto;object-fit:contain;animation:float 3.5s ease-in-out infinite;filter:drop-shadow(0 6px 20px rgba(0,191,182,.18));background:transparent;border:none}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
 /* STATS */
@@ -109,7 +110,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .bubble-role{font-size:10px;color:var(--text3)}
 .bubble-comment{font-size:12px;line-height:1.7;color:var(--text);margin-bottom:10px;word-break:keep-all}
 .bubble-rule{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;margin-bottom:8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bubble-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+
+.bubble-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;max-height:84px;overflow:hidden;position:relative;transition:max-height .3s}
+.bubble-tags.expanded{max-height:none}
+.bubble-tags-overlay{position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(to bottom,transparent,#fff);pointer-events:none}
+.tags-expand-btn{font-size:10px;color:var(--accent);cursor:pointer;font-weight:600;margin-bottom:8px;display:none}
+.tags-expand-btn.show{display:block}
+
 .tag{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
 .bubble-footer{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text3)}
 .bubble-nominee{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)}
@@ -341,6 +348,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 }
 /* 좁은 화면에서는 불씨(ember)가 뱃지와 겹칠 수 있어 숨김 (장식 요소) */
 @media(max-width:600px){.col-ember{display:none}}
+
+/* FAB 버튼 숨김 */
+.fab-container { display: none !important; }
+#fab-top, #fab-bottom { display: none !important; }
 </style>
 </head>
 <body>
@@ -751,7 +762,7 @@ document.getElementById('logo-img').src='data:image/png;base64,'+LOGO_B64;
 document.getElementById('char-img').src='data:image/webp;base64,'+CHAR_B64;
 
 // ===== CONFIG =====
-const COMPANIES=['상상인','상상인증권','시너지이노베이션','메디카코리아','선박기계'];
+const COMPANIES=['상상인','상상인증권','시너지이노베이션','메디카코리아','선박기계','플러스저축은행'];
 const CO_COLORS=['#00BFB6','#273646','#E85D26','#2E9E6B','#1565C0'];
 const CO_DIM=['rgba(0,191,182,.12)','rgba(39,54,70,.10)','rgba(232,93,38,.10)','rgba(46,158,107,.10)','rgba(21,101,192,.10)'];
 const CO_AVATARS=[['#E0FAF9','#007A72'],['#E8ECF0','#1b2a38'],['#FDE8DF','#9e2d05'],['#D5EFE2','#1d6e4a'],['#D6E4F5','#0d3c7a']];
@@ -1728,11 +1739,52 @@ window.addEventListener('click',e=>{
 setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},180000);
 
 // ===== 이메일 발송 =====
+function generateNomineeLink(parentId, nomineeName, company, rule, comment, fromName) {
+  // URL 파라미터로 지목 정보 인코딩
+  const params = new URLSearchParams({
+    nominee: nomineeName,
+    company: company,
+    rule: rule,
+    comment: comment,
+    parent: parentId,
+    from: fromName
+  });
+  return window.location.origin + window.location.pathname + '?' + params.toString();
+}
+
+function copyNomineeLink() {
+  const d = window._lastNominee;
+  if(!d) {
+    showToast('❌ 지목 정보가 없습니다', 'error');
+    return;
+  }
+  const link = generateNomineeLink(d.parentId, d.nomineeName, d.company, d.rule, d.comment, d.from);
+  navigator.clipboard.writeText(link).then(() => {
+    showToast('✅ 링크가 클립보드에 복사되었습니다. 카톡/메일 등으로 공유해주세요!', 'success');
+  }).catch(err => {
+    showToast('❌ 복사 실패: ' + err.message, 'error');
+  });
+}
+
+function applyNomineeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if(!params.get('nominee')) return;
+  
+  const nominee = params.get('nominee');
+  const company = params.get('company');
+  const parentId = params.get('parent');
+  const rule = params.get('rule');
+  
+  if(nominee && company) {
+    openFormFromPending(company, parentId, nominee);
+    document.getElementById('form-modal').classList.add('open');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
 function sendNomineeEmail(){
-  const d=window._lastNominee;if(!d)return;
-  const subj=encodeURIComponent('[Winning Rules 챌린지] '+d.from+'님이 '+d.company+' 릴레이를 이어드립니다!');
-  const body=encodeURIComponent(d.from+'님이 Winning Rules 챌린지를 이어드립니다 🏆\n\n━━━━━━━━━━━━\n💬 인사이트: '+d.comment+'\n🛡 행동강령: '+d.rule+'\n━━━━━━━━━━━━\n\n'+d.name+'님, 48시간 내에 참여해 주세요!\n참여 링크: '+window.location.href);
-  window.location.href='mailto:'+d.email+'?subject='+subj+'&body='+body;
+  // 기존 mailto는 더 이상 사용하지 않음
+  showToast('💡 링크 복사 버튼을 사용해주세요', 'info');
 }
 
 // ===== D-DAY 카운트다운 =====
@@ -1786,6 +1838,7 @@ function initCountdown(){
 // ===== INIT =====
 loadNotifySettings();
 initCountdown();
+applyNomineeFromUrl();
 if(GAS_URL){loadFromSheets();}else{showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');render();}
 </script>
 </body>
