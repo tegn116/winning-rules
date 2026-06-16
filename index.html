@@ -469,7 +469,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <!-- FAB -->
-<button class="fab" onclick="openForm()" title="참여하기">✍</button>
+
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -549,15 +549,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div class="form-hint">입력 후 Enter 또는 Space로 추가. #은 자동으로 붙습니다.</div>
     </div>
-    <div class="form-row">
-      <label class="form-label">지목할 동료 (이름 직위) *</label>
-      <input class="form-input" id="f-nominee" placeholder="예: 김태근 대리" type="text" oninput="checkNomineeConflict()">
-      <div class="form-hint">예) 김태근 대리 형식으로 입력. 지목받은 분은 48시간 내 참여해주세요.</div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">지목할 동료 이름 *</label>
+        <input class="form-input" id="f-nominee" placeholder="김태근" type="text" oninput="checkNomineeConflict()">
+      </div>
+      <div class="form-row">
+        <label class="form-label">직위 *</label>
+        <input class="form-input" id="f-nominee-role" placeholder="예: 대리, 과장" type="text">
+      </div>
     </div>
-    <div class="form-row" id="f-from-row">
-      <label class="form-label">나를 지목한 분</label>
-      <input class="form-input" id="f-from" placeholder="지목한 분 이름 (트리 연결에 사용)" type="text">
-    </div>
+    <div class="form-hint" style="margin-bottom:14px">지목받은 분은 48시간 내 참여해주세요.</div>
     <div class="form-row">
       <label class="form-label">수정용 비밀번호 4자리 * <span style="font-weight:400;color:var(--text3)">— 나중에 수정할 때 필요해요</span></label>
       <input class="form-input" id="f-pin" type="password" maxlength="4" placeholder="숫자 4자리" inputmode="numeric">
@@ -854,7 +856,7 @@ function renderBubble(node,ci,depth=0){
     }
     return `<div class="bubble-wrap">
       <div class="pending-bubble"
-        onclick="openFormFromPending('${node.company}','${node.parentId}','${node.fromName}')"
+        onclick="openFormFromPending('${node.company}','${node.parentId}','${node.fromName}','${node.nomineeName}')"
         style="cursor:pointer;transition:all .2s;border:1.5px dashed ${pc};background:${CO_DIM[ci]};flex-direction:column;gap:6px;padding:14px 16px"
         onmouseenter="this.style.borderColor='${pc}';this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)';this.style.transform='translateY(-1px)'"
         onmouseleave="this.style.borderColor='${pc}';this.style.boxShadow='';this.style.transform=''">
@@ -1082,9 +1084,19 @@ function renderTags(wrapId,inputId,tagsArr){
 }
 
 // ===== FORM =====
-function openFormFromPending(company, parentId, fromName){
+function openFormFromPending(company, parentId, fromName, nomineeName){
   // 폼 열기 — 회사/지목자 자동 입력
   openForm(parentId, fromName, company);
+  // nomineeName을 "이름 직위"로 파싱해서 자동입력
+  if(nomineeName){
+    const parts = nomineeName.trim().split(/\s+/);
+    if(parts.length >= 2){
+      document.getElementById('f-nominee').value = parts[0]; // 이름
+      document.getElementById('f-nominee-role').value = parts.slice(1).join(' '); // 직위
+    } else if(parts.length === 1){
+      document.getElementById('f-nominee').value = parts[0];
+    }
+  }
   // 이름 필드에 포커스
   setTimeout(()=>{
     const nameEl=document.getElementById('f-name');
@@ -1098,9 +1110,7 @@ function openForm(parentId='',fromName='',preCompany=''){
   initTagInput('tag-wrap','tag-text',TAGS);
   document.getElementById('f-parent-id').value=parentId;
   document.getElementById('f-is-root').value='';
-  document.getElementById('f-from').value=fromName;
-  document.getElementById('f-from-row').style.display=parentId?'none':'block';
-  ['f-company','f-name','f-role','f-comment','f-rule','f-nominee','f-nominee-email','f-pin','f-from'].forEach(id=>{
+  ['f-company','f-name','f-role','f-comment','f-rule','f-nominee','f-nominee-role','f-pin'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
   // 카드 초기화
@@ -1109,7 +1119,7 @@ function openForm(parentId='',fromName='',preCompany=''){
     if(card){card.classList.remove('selected');card.style.borderColor='';card.style.background='#fff';}
   }
   const linkRow=document.getElementById('f-link-row');
-  if(emailRow)emailRow.style.display='none';
+  if(linkRow)linkRow.style.display='none';
   document.querySelector('#form-modal .modal-title').innerHTML='✍ 챌린지 참여';
   const alEl=document.getElementById('f-already-list'); if(alEl)alEl.style.display='none';
   // 회사 컬럼 클릭으로 진입한 경우 자동 선택
@@ -1122,7 +1132,6 @@ function openForm(parentId='',fromName='',preCompany=''){
 function openRootForm(){
   openForm('','');
   document.getElementById('f-is-root').value='root';
-  document.getElementById('f-from-row').style.display='none';
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
@@ -1159,7 +1168,7 @@ function checkNomineeConflict(){
   if(!el)return;
   if(!company||!nominee){el.style.display='none';return;}
   const alreadyIn=DATA.find(d=>d.company===company&&d.name.trim()===nominee);
-  const overLimit=DATA.filter(d=>d.nomineeName&&d.nomineeName.trim()===nominee&&d.company===company).length>=NOMINEE_LIMIT;
+  const overLimit=DATA.filter(d=>d.nomineeName&&d.nomineeName.includes(nominee)&&d.company===company).length>=NOMINEE_LIMIT;
   if(alreadyIn){
     el.style.display='block';
     el.innerHTML='⛔ 이미 참여한 분입니다. 다른 분을 지목해주세요.';
@@ -1226,10 +1235,13 @@ async function submitEntry(){
   const role=document.getElementById('f-role').value.trim();
   const comment=document.getElementById('f-comment').value.trim();
   const rule=document.getElementById('f-rule').value;
-  const nominee=document.getElementById('f-nominee').value.trim();
+  const nomineeName=document.getElementById('f-nominee').value.trim();
+  const nomineeRole=document.getElementById('f-nominee-role').value.trim();
+  const nominee=nomineeName+' '+nomineeRole; // 이름+직위 합치기
   const fromName=document.getElementById('f-from').value.trim();
   const parentId=document.getElementById('f-parent-id').value;
   if(!company||!name||!comment||!rule){showToast('⚠️ 필수 항목을 모두 입력해주세요','error');return;}
+  if(nominee.trim().length<2){showToast('⚠️ 지목할 동료의 이름과 직위를 모두 입력해주세요','error');return;}
   // 중복 참여 체크: 같은 회사 + 같은 이름은 1번만
   const alreadyIn = DATA.find(d => d.company === company && d.name.trim() === name.trim());
   if(alreadyIn){showToast('⚠️ '+name+'님은 이미 참여하셨습니다. 같은 분은 중복 참여할 수 없어요.','error');return;}
