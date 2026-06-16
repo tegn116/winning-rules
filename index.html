@@ -983,13 +983,14 @@ function renderColumn(co, ci){
   const heat=getHeat(todayN);
   const flames=burning?`<span class="col-flames" style="transform:scale(${getFlameScale(todayN).toFixed(2)})"><span class="flame">🔥</span></span>`:'';
   const embers=todayN>=8?`<span class="col-ember" style="right:64px;animation-delay:0s"></span><span class="col-ember" style="right:50px;animation-delay:.5s"></span><span class="col-ember" style="right:78px;animation-delay:.95s"></span>`:'';
-  const rightSlot=burning?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`:`<span style="margin-left:auto;font-size:10px;opacity:.6">✍ 작성</span>`;
+  const hasRoot=DATA.some(d=>d.company===co && !d.parentId);
+  const rightSlot=burning?`<span class="fire-badge" title="오늘 ${todayN}개 작성됨">오늘 ${todayN}개</span>`:(hasRoot?`<span style="margin-left:auto;font-size:10px;opacity:.5">✓ 진행중</span>`:`<span style="margin-left:auto;font-size:10px;opacity:.7;font-weight:600">✍ 첫 게시글 작성</span>`);
   const headStyle=burning?`cursor:pointer;--heat:${heat.toFixed(2)}`:`background:${CO_DIM[ci]};color:${c};cursor:pointer`;
   const countStyle=burning?'':`color:${c}`;
   const titleText=burning?`${co} 챌린지 참여하기 · 오늘 ${todayN}개 작성되어 불타오르는 중!`:`${co} 챌린지 참여하기`;
 
   const html=`<div>
-    <div class="col-header ${burning?'burning':''}" style="${headStyle}" onclick="openForm('','','${co}')" title="${titleText}">
+    <div class="col-header ${burning?'burning':''}" style="${headStyle}" onclick="tryOpenForm('${co}')" title="${titleText}">
       <div class="co-dot" style="background:${c}"></div>
       <span class="co-name">${co}</span>
       ${flames}
@@ -999,7 +1000,7 @@ function renderColumn(co, ci){
     </div>
     <div class="chain" id="chain-${co.replace(/\s/g,'-')}">
       ${roots.length===0
-        ?`<div class="empty-col" onclick="openForm('','','${co}')" style="cursor:pointer;transition:all .2s" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background=''"><div class="e-icon">🌱</div><div class="e-text" style="font-weight:600;color:${c}">첫 참여자가 되어주세요!</div><div style="font-size:10px;color:var(--text3);margin-top:4px">클릭하여 시작하기</div></div>`
+        ?`<div class="empty-col" onclick="tryOpenForm('${co}')" style="cursor:pointer;transition:all .2s;border:2px dashed ${c}40;border-radius:12px;background:${CO_DIM[ci]}" onmouseenter="this.style.background='${CO_DIM[ci].replace('.10', '.18').replace('.12', '.20')}'" onmouseleave="this.style.background='${CO_DIM[ci]}'"><div class="e-icon">✍️</div><div class="e-text" style="font-weight:700;color:${c};font-size:13px">첫 게시글 작성하기</div><div style="font-size:10px;color:var(--text3);margin-top:6px;font-weight:500">⚠️ 한 회사당 한 번만 시작 가능</div></div>`
         :roots.map(r=>renderBubble(r,ci,0)).join('')}
     </div>
   </div>`;
@@ -1101,6 +1102,16 @@ function openFormFromPending(company, parentId, fromName, nomineeName){
     const nameEl=document.getElementById('f-name');
     if(nameEl)nameEl.focus();
   },350);
+}
+
+function tryOpenForm(company){
+  // root 중복 체크: 이미 해당 회사에 root가 있으면 안내
+  const existingRoot = DATA.find(d=>d.company===company && !d.parentId);
+  if(existingRoot){
+    showToast('⚠️ '+company+'은 이미 시작되었습니다. 지목받은 분의 pending 카드를 클릭하여 참여해주세요.','error');
+    return;
+  }
+  openForm('','',company);
 }
 
 function openForm(parentId='',fromName='',preCompany=''){
@@ -1256,6 +1267,16 @@ async function submitEntry(){
   
   // parentId 자동 설정: pending에서 온 경우 사용, 아니면 빈 값 (= 첫 참여자가 root)
   let resolvedParentId=parentId||'';
+  
+  // ⭐ 룰 통제: 각 회사당 root는 1개만 허용
+  // 이미 해당 회사에 root가 있는데 parentId가 없으면 → 거부
+  if(!resolvedParentId){
+    const existingRoot = DATA.find(d=>d.company===company && !d.parentId);
+    if(existingRoot){
+      showToast('⚠️ '+company+'은 이미 '+existingRoot.name+'님이 시작했습니다. 지목받은 분의 pending 카드를 클릭하여 참여해주세요.','error');
+      return;
+    }
+  }
 
   const pin=document.getElementById('f-pin').value.trim();
   if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){showToast('⚠️ 수정용 비밀번호를 숫자 4자리로 입력해주세요','error');return;}
@@ -1276,15 +1297,85 @@ async function submitEntry(){
     DATA.push(entry);invalidateCache(company);render(company);closeModal('form-modal');
     if(WEBHOOK)sendTeamsAlert(entry);
     document.getElementById('f-pin').value='';
-    showToast('🎉 등록 완료! '+nominee+'님께 릴레이가 이어집니다.','success');
-    const nomineeEmail=document.getElementById('f-nominee-email')?.value.trim();
-    if(nomineeEmail&&nominee){
-      document.getElementById('f-link-row').style.display='block';
-      document.getElementById('f-nominee-name-label').textContent=nominee;
-      window._lastNominee={name:nominee,email:nomineeEmail,from:name,company,comment,rule};
-    }
+    
+    // 지목 링크 생성 후 모달 표시
+    window._lastNominee={name:nominee,from:name,company,comment,rule,parentId:entry.id};
+    setTimeout(()=>{
+      showShareModal(nominee, entry.id, company, rule);
+    }, 300);
   }catch(e){showToast('❌ 저장 실패: '+e.message,'error');}
   finally{setSyncing(false);}
+}
+
+// 등록 후 링크 공유 모달
+function showShareModal(nomineeName, parentId, company, rule){
+  const link = generateNomineeLink(parentId, nomineeName, company, rule, '', '');
+  const html = `
+    <div class="modal-overlay open" id="share-modal" onclick="if(event.target===this)closeModal('share-modal')">
+      <div class="modal" style="max-width:480px">
+        <div style="text-align:center;margin-bottom:18px">
+          <div style="font-size:48px;margin-bottom:10px">🎉</div>
+          <div class="modal-title" style="font-size:18px;justify-content:center">등록 완료!</div>
+          <div class="modal-sub" style="text-align:center;margin-top:6px"><strong>${nomineeName}</strong>님께 릴레이 링크를 보내주세요</div>
+        </div>
+        
+        <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--text2);word-break:break-all;line-height:1.5;font-family:'DM Mono',monospace;border:1px solid var(--border)">
+          ${link}
+        </div>
+        
+        <button class="btn btn-accent" style="width:100%;justify-content:center;padding:12px;font-size:14px;margin-bottom:10px" onclick="copyShareLink('${link.replace(/'/g, "\\'")}')">
+          📋 링크 복사하기
+        </button>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <button class="btn" style="justify-content:center;gap:5px" onclick="shareKakao('${link.replace(/'/g, "\\'")}', '${nomineeName.replace(/'/g, "\\'")}')">
+            💬 카톡 공유
+          </button>
+          <button class="btn" style="justify-content:center;gap:5px" onclick="shareSMS('${link.replace(/'/g, "\\'")}', '${nomineeName.replace(/'/g, "\\'")}')">
+            📱 문자
+          </button>
+        </div>
+        
+        <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;background:var(--accent-dim);padding:10px;border-radius:6px;margin-bottom:14px">
+          💡 위 링크를 카톡/메일/메신저로 공유하면<br>지목받은 분이 클릭만으로 자동 입력됩니다
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-accent" style="width:100%;justify-content:center" onclick="closeModal('share-modal');document.getElementById('share-modal').remove()">닫기</button>
+        </div>
+      </div>
+    </div>
+  `;
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  document.body.appendChild(div.firstElementChild);
+}
+
+function copyShareLink(link){
+  navigator.clipboard.writeText(link).then(()=>{
+    showToast('✅ 링크가 클립보드에 복사되었습니다!','success');
+  }).catch(err=>{
+    // 폴백: 텍스트 영역 사용
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 링크가 복사되었습니다!','success');
+  });
+}
+
+function shareKakao(link, nomineeName){
+  const text = `[Winning Rules Challenge] ${nomineeName}님, 릴레이에 참여해주세요!\n\n${link}`;
+  copyShareLink(text);
+  showToast('✅ 카톡에 붙여넣기 하세요!','success');
+}
+
+function shareSMS(link, nomineeName){
+  const text = `[Winning Rules] ${nomineeName}님께 릴레이! ${link}`;
+  // SMS 앱 열기 시도
+  window.location.href = `sms:?body=${encodeURIComponent(text)}`;
 }
 
 // ===== EDIT =====
