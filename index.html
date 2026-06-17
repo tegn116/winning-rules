@@ -59,7 +59,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
 .hero h1{font-family:'Pretendard','Playfair Display',serif;font-size:clamp(28px,3.2vw,46px);color:var(--navy);line-height:1.15;margin-bottom:14px;letter-spacing:-.035em;font-weight:700;text-wrap:balance}
 .hero h1 em{font-family:'Playfair Display','Pretendard',serif;font-style:italic;color:var(--accent);font-weight:600;letter-spacing:-.02em;padding:0 2px}
-.hero-sub{font-size:14px;color:var(--text2);line-height:1.8;max-width:42ch;margin-bottom:22px;text-wrap:pretty}
+.hero-sub{font-size:14px;color:var(--text2);line-height:1.8;max-width:38ch;margin-bottom:22px;text-wrap:pretty}
 .hero-pills{display:flex;gap:7px;flex-wrap:wrap}
 .hero-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
 .hero-char{position:relative;z-index:1}
@@ -347,6 +347,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .lb-head{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;flex-wrap:wrap}
 .lb-title{font-size:12px;font-weight:800;color:var(--navy);letter-spacing:.02em;display:flex;align-items:center;gap:6px}
 .lb-sub{font-size:10px;color:var(--text3)}
+.lb-formula{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px}
+.lb-formula-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.02em}
+.lb-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;line-height:1;white-space:nowrap;border:1px solid;transition:transform .15s}
+.lb-chip:hover{transform:translateY(-1px)}
+.lb-chip.c1{background:#fff5e6;color:#d97706;border-color:#fed7aa}
+.lb-chip.c2{background:#ffe4ec;color:#db2777;border-color:#fbcfe8}
+.lb-chip.c3{background:#e9f5ff;color:#0284c7;border-color:#bae6fd}
+.lb-chip.c4{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0}
+.lb-chip.c5{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+.lb-op{font-size:11px;color:var(--text3);font-weight:700;margin:0 1px}
 .lb-rows{display:flex;flex-direction:column;gap:7px}
 .lb-row{display:flex;align-items:center;gap:10px}
 .lb-rank{width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;font-size:13px;color:var(--text3);flex-shrink:0}
@@ -2735,7 +2745,7 @@ var qrcode = function() {
     <div class="hero-left">
       <div class="hero-label"><div class="pulse"></div> 챌린지 진행 중</div>
       <h1>외부 인사이트를 <em>내부자산</em>으로</h1>
-      <p class="hero-sub">행동강령과 연결된 업무·일상의 순간을 한줄로 공유하고, 동료에게 이어가는 릴레이 지식 공유 챌린지입니다.</p>
+      <p class="hero-sub">행동강령과 연결된 업무·일상의 순간을 한줄로 공유하고,<br>동료에게 이어가는 릴레이 지식 공유 챌린지입니다.</p>
       <div class="hero-pills">
         <span class="hero-pill">✍ 한줄평 공유</span>
         <span class="hero-pill">🛡 행동강령 연결</span>
@@ -2753,7 +2763,16 @@ var qrcode = function() {
 <div class="lb-wrap" id="leaderboard-wrap" style="display:none">
   <div class="lb-head">
     <div class="lb-title">🏆 그룹사 순위</div>
-    <div class="lb-sub">점수 = 참여 × 10 + 좋아요 × 2 + 릴레이 콤보 × 5 − 만료 × 10</div>
+    <div class="lb-formula">
+      <span class="lb-formula-label">SCORE =</span>
+      <span class="lb-chip c1" title="참여 인원">🙋 참여 <strong>×10</strong></span>
+      <span class="lb-op">+</span>
+      <span class="lb-chip c2" title="받은 좋아요">❤️ 좋아요 <strong>×2</strong></span>
+      <span class="lb-op">+</span>
+      <span class="lb-chip c3" title="릴레이 콤보">🔥 콤보 <strong>×5</strong></span>
+      <span class="lb-op">−</span>
+      <span class="lb-chip c5" title="만료 페널티">⏱ 만료 <strong>×10</strong></span>
+    </div>
     <div class="lb-total" id="lb-total"></div>
   </div>
   <div class="lb-rows" id="lb-rows"></div>
