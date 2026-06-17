@@ -4418,42 +4418,159 @@ async function sendTeamsAlert(entry){
 }
 
 // ===== DEMO =====
+// 🎲 랜덤 샘플 데이터 풀
+const SAMPLE_NAMES = ['김태근','이수민','박지영','최현우','정민호','강서연','조윤하','윤도현','임채린','한승우','오세준','신예린','배지훈','홍서아','문지환','권나영','류현석','구민지','노태형','전혜원','서경준','남궁민','황보영','선우진','독고은','제갈수','사공우','동방민','남기성','지수아','채영석','홍윤서','맹주원','옥동현','석정훈','은가람','마동석','경리아'];
+const SAMPLE_ROLES = ['사원','대리','과장','차장','부장','팀장','수석','책임','선임','이사','상무','전무','부사장','본부장','매니저'];
+const SAMPLE_COMMENTS = [
+  '오늘 외부 컨퍼런스에서 들은 한 마디가 우리 팀 전략을 바꿨다. 외부의 자극을 내부의 언어로 번역하는 게 진짜 일이다.',
+  '고객이 침묵할 때 가장 많은 것을 말하고 있다. 데이터 뒤에 있는 행동을 읽는 것이 핵심이다.',
+  '실리콘밸리 사례에서 배운 것 — 완성된 제품보다 배우는 과정이 경쟁력이다. 우리도 더 자주 시도해야 한다.',
+  '현장에서 만난 동료의 한마디가 우리 솔루션 방향을 바꿨다. 현장의 목소리가 최고의 인사이트다.',
+  '변화를 두려워하는 게 아니라, 변화를 기다리는 게 더 위험하다는 걸 이번 프로젝트에서 체감했다.',
+  '코드 리뷰를 하다 보면 내가 틀릴 수 있다는 걸 매일 깨닫는다. 그게 성장의 시작이다.',
+  '실패를 숨기는 조직은 성장도 숨긴다는 말이 우리 팀 회의 문화를 바꿨다.',
+  '경쟁사 피드백을 팀 전체와 공유했더니 다음 주 제안서가 완전히 달라졌다.',
+  '듣는 조직이 이기는 조직이다. 오늘 회의에서 가장 조용했던 신입의 말이 가장 정확했다.',
+  '직급을 떼고 의견을 모았더니 의외의 답이 나왔다. 우리는 너무 빨리 결론을 내고 있었다.',
+  '뒤에서 말하는 대신 앞에서 솔직하게 말했더니, 관계가 더 깊어졌다.',
+  '우리 팀이 아닌 다른 본부의 사례를 가져왔더니 의사결정이 훨씬 빨라졌다.',
+  '한 분야의 전문가가 되기 위해선 매주 1시간씩 새로운 것을 배워야 한다는 게 와닿았다.',
+  '동료의 다른 의견을 무시하지 않고 들어보니, 더 나은 답이 그 안에 있었다.',
+  '속도가 완벽함을 이긴다. 어제 1차 시안을 보여줬더니 더 좋은 피드백이 나왔다.',
+  '책상 위 자료보다 현장의 30분이 더 많은 답을 줬다.',
+  '의사결정이 늦어지는 건 정보가 부족해서가 아니라, 결정할 권한이 분산되어 있어서였다.',
+  '내가 옳다는 확신을 잠시 내려놓으니, 더 좋은 협업이 시작됐다.'
+];
+const SAMPLE_RULES = [
+  '변화를 이끌거나, 비키거나',
+  '완성보다 속도, 성공보다 시도',
+  '배움은 생존을 위한 가장 공격적인 투자',
+  '외부 인사이트를 내부 자산으로 연결한다',
+  '직급에 상관없이 전원이 의사결정에 참여해야 한다',
+  '우리 팀을 넘어 우리 회사의 답을 찾는다',
+  '우리는 뒤에서 말하지 않는다',
+  '동료의 의견을 듣는 것도 월급에 포함이다',
+  '다름을 인정하라. 내가 틀릴 수도 있다'
+];
+const SAMPLE_TAGS = ['업무','리더십','전략','고객','데이터','혁신','제품','현장','의료','영업','공유','팀문화','실패','개발','성장','기술','협업','학습','피드백','커뮤니케이션','책임감','자율','경청','다양성','속도','실험'];
+
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function randMany(arr,n){const a=[...arr];const r=[];for(let i=0;i<n&&a.length;i++)r.push(a.splice(Math.floor(Math.random()*a.length),1)[0]);return r;}
+
 async function loadDemo(){
   if(!IS_ADMIN){showToast('❌ 관리자만 사용할 수 있습니다','error');return;}
   const now=Date.now(),h=3600000;
-  const uid=String(Date.now()); // uid를 먼저 고정
-  const id1='dm'+uid+'_1', id2='dm'+uid+'_2', id3='dm'+uid+'_3', id4='dm'+uid+'_4', id5='dm'+uid+'_5';
-  const samples=[
-    {id:id1,company:'상상인',name:'유○○ 대표',role:'대표이사',comment:'작년 글로벌 핀테크 컨퍼런스에서 들은 한 마디가 우리 전략을 바꿨다. 외부의 자극을 내부의 언어로 번역하는 것이 리더의 일이다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['리더십','전략'],nomineeId:'',nomineeName:'이○○ 본부장',parentId:'',createdAt:now-5*h,pinHash:''},
-    {id:id2,company:'상상인증권',name:'김○○ 대표',role:'대표이사',comment:'고객이 침묵할 때 가장 많은 것을 말하고 있다. 데이터 뒤에 있는 행동을 읽는 것이 증권업의 핵심이다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['고객','데이터'],nomineeId:'',nomineeName:'박○○ 본부장',parentId:'',createdAt:now-5*h,pinHash:''},
-    {id:id3,company:'시너지이노베이션',name:'이○○ 대표',role:'대표이사',comment:'실리콘밸리 방문에서 배운 것 — 완성된 제품보다 배우는 과정이 경쟁력이다. 우리도 더 자주 시도해야 한다.',rule:'완성보다 속도, 성공보다 시도',hashtags:['혁신','제품'],nomineeId:'',nomineeName:'최○○ 이사',parentId:'',createdAt:now-5*h,pinHash:''},
-    {id:id4,company:'메디카코리아',name:'정○○ 대표',role:'대표이사',comment:'의료 현장에서 만난 의사의 한마디가 우리 솔루션 방향을 바꿨다. 현장의 목소리가 최고의 인사이트다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['현장','의료'],nomineeId:'',nomineeName:'강○○ 팀장',parentId:'',createdAt:now-5*h,pinHash:''},
-    {id:id5,company:'선박기계',name:'박○○ 대표',role:'대표이사',comment:'현장 엔지니어들의 목소리가 우리 제품 방향을 완전히 바꿨다. 듣는 조직이 이기는 조직이다.',rule:'동료의 의견을 듣는 것도 월급에 포함이다',hashtags:['현장','엔지니어링'],nomineeId:'',nomineeName:'최○○ 팀장',parentId:'',createdAt:now-5*h,pinHash:''},
-    {id:'dm'+uid+'_6',company:'상상인',name:'이○○ 본부장',role:'영업본부',comment:'고객 미팅에서 우연히 들은 경쟁사 피드백을 팀 전체와 공유했더니 다음 주 제안서가 완전히 달라졌다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['영업','공유'],nomineeId:'',nomineeName:'최○○ 팀장',parentId:id1,createdAt:now-2*h,pinHash:''},
-    {id:'dm'+uid+'_7',company:'상상인증권',name:'박○○ 본부장',role:'리테일본부',comment:'실패를 숨기는 조직은 성장을 숨기는 거라는 말이 우리 팀 회의 문화를 바꿨다.',rule:'완성보다 속도, 성공보다 시도',hashtags:['팀문화','실패'],nomineeId:'',nomineeName:'이○○ 팀장',parentId:id2,createdAt:now-2*h,pinHash:''},
-    {id:'dm'+uid+'_8',company:'시너지이노베이션',name:'최○○ 이사',role:'개발본부',comment:'코드 리뷰를 하다 보면 내가 틀릴 수 있다는 걸 매일 깨닫는다. 그게 성장의 시작이다.',rule:'다름을 인정하라. 내가 틀릴 수도 있다',hashtags:['개발','성장'],nomineeId:'',nomineeName:'강○○ 개발자',parentId:id3,createdAt:now-2*h,pinHash:''},
-    {id:'dm'+uid+'_9',company:'메디카코리아',name:'강○○ 팀장',role:'영업팀',comment:'현장 의료진의 목소리를 듣지 않고 만든 제품은 반드시 실패한다.',rule:'외부 인사이트를 내부 자산으로 연결한다',hashtags:['현장','의료'],nomineeId:'',nomineeName:'류○○ 대리',parentId:id4,createdAt:now-2*h,pinHash:''},
-    {id:'dm'+uid+'_10',company:'선박기계',name:'최○○ 팀장',role:'기술팀',comment:'변화를 두려워하는 게 아니라 변화를 기다리는 게 더 위험하다는 걸 이번 프로젝트에서 체감했다.',rule:'변화를 이끌거나, 비키거나',hashtags:['기술','혁신'],nomineeId:'',nomineeName:'박○○ 대리',parentId:id5,createdAt:now-2*h,pinHash:''},
-  ];
+  const uid=String(Date.now());
+  const samples=[];
+  
+  // 1️⃣ 각 회사별 대표 첫 게시글 (root)
+  const rootIds={};
+  COMPANIES.forEach((co,i)=>{
+    const ceo = CEOS[co];
+    const id = 'dm'+uid+'_root'+i;
+    rootIds[co] = id;
+    samples.push({
+      id, company:co,
+      name: ceo.name, role: ceo.role,
+      comment: rand(SAMPLE_COMMENTS),
+      rule: rand(SAMPLE_RULES),
+      hashtags: randMany(SAMPLE_TAGS, 2+Math.floor(Math.random()*2)),
+      nomineeId:'', nomineeName: rand(SAMPLE_NAMES)+' '+rand(SAMPLE_ROLES),
+      parentId:'', 
+      createdAt: now - (10+Math.floor(Math.random()*20))*h, // 10-30시간 전
+      pinHash:''
+    });
+  });
+  
+  // 2️⃣ 각 회사별 추가 릴레이 (3~7명 랜덤)
+  COMPANIES.forEach((co)=>{
+    const chainCount = 3 + Math.floor(Math.random()*5); // 3~7명
+    let lastParent = rootIds[co];
+    for(let i=0;i<chainCount;i++){
+      const id = 'dm'+uid+'_'+co.replace(/[^가-힣]/g,'')+'_'+i;
+      const name = rand(SAMPLE_NAMES);
+      const role = rand(SAMPLE_ROLES);
+      samples.push({
+        id, company:co,
+        name, role,
+        comment: rand(SAMPLE_COMMENTS),
+        rule: rand(SAMPLE_RULES),
+        hashtags: randMany(SAMPLE_TAGS, 2+Math.floor(Math.random()*3)),
+        nomineeId:'', nomineeName: rand(SAMPLE_NAMES)+' '+rand(SAMPLE_ROLES),
+        parentId: lastParent,
+        createdAt: now - (5-Math.floor(i*0.5))*h - Math.floor(Math.random()*h),
+        pinHash:''
+      });
+      lastParent = id;
+    }
+  });
+  
   setSyncing(true);
   try{
     for(const s of samples)await apiCall('add',{entry:s});
     DATA=[...DATA,...samples];
     invalidateCache();
     render();
-    showToast(`📦 샘플 ${samples.length}개 추가! 총 ${DATA.length}명 참여 중`,'success');
+    showToast(`🎲 랜덤 샘플 ${samples.length}개 추가! 총 ${DATA.length}명 참여 중`,'success');
   }catch(e){showToast('❌ 실패: '+e.message,'error');}
   finally{setSyncing(false);}
 }
 async function clearAll(){
   if(!IS_ADMIN){showToast('❌ 관리자만 사용할 수 있습니다','error');return;}
+  if(DATA.length===0){showToast('ℹ️ 삭제할 데이터가 없습니다','success');return;}
+  
   // 되돌릴 수 없는 작업 — 단순 confirm 대신 확인 문구 입력을 요구한다.
-  // (참고: ADMIN_PW는 클라이언트에 노출되므로, 운영 시 GAS(서버)에서 한 번 더 검증하는 것을 권장)
-  const answer=prompt('⚠️ 모든 참여 데이터가 영구 삭제됩니다.\n계속하려면 "초기화" 를 입력하세요.');
+  const answer=prompt(`⚠️ 모든 참여 데이터(${DATA.length}개)가 영구 삭제됩니다.\n계속하려면 "초기화" 를 입력하세요.`);
   if(answer===null)return;
   if(answer.trim()!=='초기화'){showToast('❌ 확인 문구가 일치하지 않아 취소되었습니다','error');return;}
-  try{await apiCall('clear');DATA=[];invalidateCache();render();showToast('🗑 초기화 완료');}
-  catch(e){showToast('❌ 실패: '+e.message,'error');}
+  
+  setSyncing(true);
+  const total = DATA.length;
+  let success = 0;
+  let failed = 0;
+  
+  // 먼저 'clear' 액션 시도 (GAS에 있으면 빠름)
+  try{
+    await apiCall('clear');
+    DATA=[];
+    invalidateCache();
+    render();
+    showToast(`🗑 전체 초기화 완료 (${total}개)`,'success');
+    setSyncing(false);
+    return;
+  }catch(e){
+    // clear 액션이 없으면 개별 삭제로 폴백
+    console.log('clear 액션 없음, 개별 삭제로 진행');
+  }
+  
+  // 개별 삭제 폴백
+  try{
+    const idsToDelete = DATA.map(d=>d.id);
+    for(const id of idsToDelete){
+      try{
+        await apiCall('delete',{id});
+        success++;
+      }catch(e){
+        failed++;
+        console.error('삭제 실패:', id, e);
+      }
+    }
+    
+    // 로컬 데이터도 초기화
+    DATA = DATA.filter(d => !idsToDelete.includes(d.id));
+    invalidateCache();
+    render();
+    
+    if(failed===0){
+      showToast(`🗑 전체 초기화 완료 (${success}/${total}개)`,'success');
+    } else {
+      showToast(`⚠️ ${success}개 삭제 완료, ${failed}개 실패. 새로고침 후 다시 시도해주세요.`,'error');
+    }
+  }catch(e){
+    showToast('❌ 초기화 실패: '+e.message,'error');
+  }finally{
+    setSyncing(false);
+  }
 }
 
 function exportJSON(){
