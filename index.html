@@ -4009,7 +4009,7 @@ function showShareModal(nomineeName, parentId, company, rule){
     if(typeof qrcode!=='undefined'){
       const qr=qrcode(0,'M'); qr.addData(link); qr.make();
       const el=document.getElementById('share-qr');
-      if(el) el.innerHTML=qr.createImgTag(3,6);
+      if(el) el.innerHTML=qr.createImgTag(5,10);
     } else {
       const el=document.getElementById('share-qr'); if(el) el.style.display='none';
     }
@@ -4762,8 +4762,19 @@ function initCountdown(){
 document.querySelectorAll('.co-select-card').forEach(el=>{el.setAttribute('role','button');el.setAttribute('tabindex','0');});
 loadNotifySettings();
 initCountdown();
-applyNomineeFromUrl();
-if(GAS_URL){loadFromSheets();}else{showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');render();}
+
+// ⭐ 데이터 로드를 먼저 → 그 다음 URL 파라미터 적용
+async function initApp(){
+  if(GAS_URL){
+    await loadFromSheets();
+  } else {
+    showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');
+    render();
+  }
+  // 데이터 로드 완료 후 URL 파라미터로 폼 열기
+  applyNomineeFromUrl();
+}
+initApp();
 </script>
 </body>
 </html>
