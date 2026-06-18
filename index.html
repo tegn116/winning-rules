@@ -4009,7 +4009,7 @@ function showShareModal(nomineeName, parentId, company, rule){
     if(typeof qrcode!=='undefined'){
       const qr=qrcode(0,'M'); qr.addData(link); qr.make();
       const el=document.getElementById('share-qr');
-      if(el) el.innerHTML=qr.createImgTag(5,10);
+      if(el) el.innerHTML=qr.createImgTag(3,6);
     } else {
       const el=document.getElementById('share-qr'); if(el) el.style.display='none';
     }
