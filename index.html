@@ -8,7 +8,7 @@
      ※ 썸네일 이미지는 공개 URL이 필요합니다 — 호스팅 후 아래 og:image 주석을 풀고 실제 이미지 주소를 넣으세요. -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Winning Rules Challenge — 상상인 그룹">
-<meta property="og:description" content="행동강령과 연결된 한줄 인사이트를 공유하고,<br> 동료에게 이어가는 릴레이 지식 공유 챌린지">
+<meta property="og:description" content="행동강령과 연결된 한줄 인사이트를 공유하고 동료에게 이어가는 릴레이 지식 공유 챌린지">
 <meta property="og:site_name" content="상상인 그룹">
 <!-- <meta property="og:image" content="https://<배포주소>/og-thumb.png"> -->
 <meta name="twitter:card" content="summary">
@@ -59,7 +59,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
 .hero h1{font-family:'Pretendard','Playfair Display',serif;font-size:clamp(28px,3.2vw,46px);color:var(--navy);line-height:1.15;margin-bottom:14px;letter-spacing:-.035em;font-weight:700;text-wrap:balance}
 .hero h1 em{font-family:'Playfair Display','Pretendard',serif;font-style:italic;color:var(--accent);font-weight:600;letter-spacing:-.02em;padding:0 2px}
-.hero-sub{font-size:14px;color:var(--text2);line-height:1.8;max-width:38ch;margin-bottom:22px;text-wrap:pretty}
+.hero-sub{font-size:14px;color:var(--text2);line-height:1.8;max-width:none;margin-bottom:22px;white-space:nowrap}
 .hero-pills{display:flex;gap:7px;flex-wrap:wrap}
 .hero-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
 .hero-char{position:relative;z-index:1}
@@ -3160,7 +3160,6 @@ const CEOS={
 const CO_COLORS=['#00BFB6','#273646','#E85D26','#2E9E6B','#1565C0','#8B5CF6'];
 const CO_DIM=['rgba(0,191,182,.12)','rgba(39,54,70,.10)','rgba(232,93,38,.10)','rgba(46,158,107,.10)','rgba(21,101,192,.10)','rgba(139,92,246,.12)'];
 const CO_AVATARS=[['#E0FAF9','#007A72'],['#E8ECF0','#1b2a38'],['#FDE8DF','#9e2d05'],['#D5EFE2','#1d6e4a'],['#D6E4F5','#0d3c7a'],['#EDE9FE','#6D28D9']];
-const NOMINEE_LIMIT=3;
 const RULES_SHORT={'변화를 이끌거나, 비키거나':'변화를 이끌거나','완성보다 속도, 성공보다 시도':'완성보다 속성','배움은 생존을 위한 가장 공격적인 투자':'배움은 생존투자','외부 인사이트를 내부 자산으로 연결한다':'인사이트→자산','직급에 상관없이 전원이 의사결정에 참여해야 한다':'전원 의사결정','우리 팀을 넘어 우리 회사의 답을 찾는다':'회사의 답을','우리는 뒤에서 말하지 않는다':'뒤에서 말않기','동료의 의견을 듣는 것도 월급에 포함이다':'경청도 월급','다름을 인정하라. 내가 틀릴 수도 있다':'다름의 인정'};
 const ADMIN_PW='admin1234';
 
@@ -3264,7 +3263,7 @@ function renderBubble(node,ci,depth=0){
               <div class="pending-name" style="color:var(--text2)">${escapeHtml(node.nomineeName)}</div>
               <div class="pending-from" style="color:var(--text3)">${escapeHtml(node.fromName)}님의 지목</div>
             </div>
-            <span style="font-size:9px;color:#e67e22;background:rgba(230,126,34,.1);padding:3px 8px;border-radius:10px;border:1px solid rgba(230,126,34,.3);font-weight:600;flex-shrink:0">만료 -3점</span>
+            <span style="font-size:9px;color:#e67e22;background:rgba(230,126,34,.1);padding:3px 8px;border-radius:10px;border:1px solid rgba(230,126,34,.3);font-weight:600;flex-shrink:0">만료 -10점</span>
           </div>
         </div>
         <div class="connector" style="background:${pc}40;opacity:.3"></div>
@@ -3524,7 +3523,7 @@ function render(dirtyCompany=null){
   requestAnimationFrame(markOverflowingTags);
 }
 
-// ===== 🏆 그룹사 리더보드 (가중합: 참여 + 좋아요 + 릴레이 연결도 - 만료 페널티) =====
+// ===== 🏆 그룹사 리더보드 (가중합: 참여 + 좋아요 + 릴레이 콤보 - 만료 페널티) =====
 // 누적 기준 — 리워드 산정용. (상단 통계 숫자는 '48시간 활성' 기준이라 값이 다를 수 있음)
 function getCompanyScore(co){
   const items=DATA.filter(d=>d.company===co);
@@ -3655,7 +3654,7 @@ function openFormFromPending(company, parentId, fromName, nomineeName, isLate=fa
       const modalSub = document.querySelector('#form-modal .modal-sub');
       if(modalSub){
         if(isLate){
-          modalSub.innerHTML = `⏰ <strong>${myName}${myRole?' '+myRole:''}</strong>님 — 늦었지만 참여해주셔서 감사합니다!<br><span style="font-size:11px;color:var(--text3);font-weight:400">⚠️ 48시간 초과로 만료 페널티(-3점)가 적용됩니다</span>`;
+          modalSub.innerHTML = `⏰ <strong>${myName}${myRole?' '+myRole:''}</strong>님 — 늦었지만 참여해주셔서 감사합니다!<br><span style="font-size:11px;color:var(--text3);font-weight:400">⚠️ 48시간 초과로 만료 페널티(-10점)가 적용됩니다</span>`;
           modalSub.style.color = '#e67e22';
           modalSub.style.fontWeight = '600';
         } else {
@@ -4018,7 +4017,7 @@ function showShareModal(nomineeName, parentId, company, rule){
 
 function copyShareLink(link){
   navigator.clipboard.writeText(link).then(()=>{
-    showToast('✅ 링크가 클립보드에 복사되었습니다!','success');
+    showToast('✅ 링크가 복사되었습니다!','success');
   }).catch(err=>{
     // 폴백: 텍스트 영역 사용
     const ta = document.createElement('textarea');
@@ -4064,7 +4063,9 @@ async function submitDelete(){
   }
 
   try{
-    await apiCall('delete',{id});
+    // 서버단 PIN 재검증을 위해 pinHash 전송 (관리자 모드면 'ADMIN' 전송)
+    const sendPinHash = IS_ADMIN ? 'ADMIN' : (node.pinHash || '');
+    await apiCall('delete',{id, pinHash: sendPinHash});
     const deletedCo=node.company;
     DATA.splice(idx,1);
     invalidateCache(deletedCo);
@@ -4110,7 +4111,12 @@ async function submitEdit(){
     nomineeName:document.getElementById('e-nominee').value.trim(),
     pinHash:DATA[idx].pinHash, // PIN 유지
   };
-  try{await apiCall('update',{entry:updated});DATA[idx]=updated;invalidateCache(updated.company);render(updated.company);closeModal('edit-modal');document.getElementById('e-pin').value='';showToast('✅ 수정 완료','success');}
+  try{
+    // pinHash는 본인 확인용 — 관리자 모드면 'ADMIN' 전송
+    const sendPinHash = IS_ADMIN ? 'ADMIN' : (DATA[idx].pinHash || '');
+    await apiCall('edit',{entry:updated, pinHash: sendPinHash});
+    DATA[idx]=updated;invalidateCache(updated.company);render(updated.company);closeModal('edit-modal');document.getElementById('e-pin').value='';showToast('✅ 수정 완료','success');
+  }
   catch(e){showToast('❌ 수정 실패: '+e.message,'error');}
 }
 
@@ -4549,7 +4555,8 @@ async function clearAll(){
     const idsToDelete = DATA.map(d=>d.id);
     for(const id of idsToDelete){
       try{
-        await apiCall('delete',{id});
+        // 관리자 일괄 삭제 — ADMIN 토큰으로 PIN 검증 우회
+        await apiCall('delete',{id, pinHash:'ADMIN'});
         success++;
       }catch(e){
         failed++;
@@ -4681,7 +4688,7 @@ function copyNomineeLink() {
   }
   const link = generateNomineeLink(d.parentId, d.nomineeName, d.company, d.rule, d.comment, d.from);
   navigator.clipboard.writeText(link).then(() => {
-    showToast('✅ 링크가 클립보드에 복사되었습니다. 카톡/메일 등으로 공유해주세요!', 'success');
+    showToast('✅ 링크가 복사되었습니다!', 'success');
   }).catch(err => {
     showToast('❌ 복사 실패: ' + err.message, 'error');
   });
@@ -4765,14 +4772,29 @@ initCountdown();
 
 // ⭐ 데이터 로드를 먼저 → 그 다음 URL 파라미터 적용
 async function initApp(){
-  if(GAS_URL){
-    await loadFromSheets();
-  } else {
-    showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');
-    render();
+  console.log('[Init] 앱 초기화 시작');
+  try {
+    if(GAS_URL){
+      console.log('[Init] Google Sheets 데이터 로드 중...');
+      await loadFromSheets();
+      console.log('[Init] 데이터 로드 완료, DATA 개수:', DATA.length);
+    } else {
+      console.warn('[Init] GAS_URL 없음 - 설정 필요');
+      showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');
+      render();
+    }
+  } catch(e) {
+    console.error('[Init] 데이터 로드 에러:', e);
+    showToast('⚠️ 초기 로드 실패: ' + e.message, 'error');
+    render(); // 에러가 나도 빈 화면이라도 렌더
   }
-  // 데이터 로드 완료 후 URL 파라미터로 폼 열기
-  applyNomineeFromUrl();
+  
+  // 데이터 로드 완료 (또는 실패) 후 URL 파라미터로 폼 열기
+  try {
+    applyNomineeFromUrl();
+  } catch(e) {
+    console.error('[Init] URL 파라미터 처리 에러:', e);
+  }
 }
 initApp();
 </script>
