@@ -4120,7 +4120,7 @@ function showShareModal(nomineeName, parentId, company, rule){
         </button>
 
         <div style="text-align:center;margin-bottom:14px">
-          <div id="share-qr" style="display:inline-block;padding:14px;background:#fff;border:2px solid var(--accent);border-radius:14px;line-height:0;box-shadow:0 4px 16px rgba(0,178,169,.15)"></div>
+          <div id="share-qr" style="display:inline-block;padding:10px;background:#fff;border:2px solid var(--accent);border-radius:12px;line-height:0;box-shadow:0 4px 16px rgba(0,178,169,.15);max-width:240px"></div>
           <div style="font-size:12px;color:var(--text2);margin-top:10px;font-weight:600">📱 휴대폰 카메라로 QR 스캔</div>
           <div style="font-size:10px;color:var(--text3);margin-top:2px;margin-bottom:8px">옆자리 동료에게 보여주면 바로 참여 가능!</div>
           <button class="btn" style="font-size:12px;padding:6px 14px" onclick="downloadQR('${jsStr(nomineeName)}')">
@@ -4146,7 +4146,16 @@ function showShareModal(nomineeName, parentId, company, rule){
     if(typeof qrcode!=='undefined'){
       const qr=qrcode(0,'M'); qr.addData(link); qr.make();
       const el=document.getElementById('share-qr');
-      if(el) el.innerHTML=qr.createImgTag(5,10);
+      if(el){
+        el.innerHTML=qr.createImgTag(3,8);
+        // 모달 크기에 맞춰 강제로 width 제한
+        const qrImg = el.querySelector('img');
+        if(qrImg){
+          qrImg.style.width='200px';
+          qrImg.style.height='200px';
+          qrImg.style.imageRendering='pixelated';
+        }
+      }
     } else {
       const el=document.getElementById('share-qr'); if(el) el.style.display='none';
     }
