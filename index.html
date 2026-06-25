@@ -97,6 +97,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .action-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg2)}
 .action-btn.edit:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 .action-btn.del:hover{border-color:#e74c3c;color:#e74c3c;background:rgba(231,76,60,.07)}
+.action-btn.share-link:hover{border-color:#5b6cff;color:#5b6cff;background:rgba(91,108,255,.07)}
 .action-btn.like-active{border-color:#e74c3c;color:#e74c3c;background:rgba(231,76,60,.07)}
 /* 삭제 확인 모달 */
 .confirm-modal{background:#fff;border-radius:var(--radius);padding:24px;width:100%;max-width:360px;transform:translateY(12px);transition:transform .2s;box-shadow:0 20px 60px rgba(0,0,0,.15)}
@@ -2733,6 +2734,7 @@ var qrcode = function() {
   <div class="nav-right">
     <div id="sync-indicator"><div class="spin"></div> 동기화 중...</div>
     <div class="nav-actions">
+      <a class="btn" href="https://ssi-wr.kr/guide/3" target="_blank" rel="noopener" style="text-decoration:none">📖 가이드</a>
       <button class="btn" onclick="loadFromSheets()">🔄 새로고침</button>
       <button class="btn" onclick="openSettingsAuth()">⚙ 설정</button>
     </div>
@@ -2935,8 +2937,9 @@ var qrcode = function() {
       <label class="form-label">수정용 비밀번호 4자리 * <span style="font-weight:400;color:var(--text3)">— 나중에 수정할 때 필요해요</span></label>
       <input class="form-input" id="f-pin" type="password" maxlength="4"
         placeholder="숫자 4자리"
-        style="font-size:16px;letter-spacing:4px;text-align:center"
-        inputmode="numeric">
+        style="text-align:center;letter-spacing:6px;font-family:'Noto Sans KR',sans-serif"
+        inputmode="numeric"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)">
       <div class="form-hint">본인만 아는 숫자 4자리를 설정해주세요. 분실 시 관리자에게 문의하세요.</div>
     </div>
     <div class="modal-actions">
@@ -2999,8 +3002,9 @@ var qrcode = function() {
       <label class="form-label">비밀번호 확인 *</label>
       <input class="form-input" id="e-pin" type="password" maxlength="4"
         placeholder="등록 시 설정한 4자리"
-        style="font-size:16px;letter-spacing:4px;text-align:center"
-        inputmode="numeric">
+        style="text-align:center;letter-spacing:6px;font-family:'Noto Sans KR',sans-serif"
+        inputmode="numeric"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)">
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('edit-modal')">취소</button>
@@ -3109,7 +3113,9 @@ var qrcode = function() {
       <label class="form-label">본인 확인 — 수정용 비밀번호 4자리</label>
       <input class="form-input" id="d-pin" type="password" maxlength="4"
         placeholder="등록 시 설정한 비밀번호"
-        style="font-size:16px;letter-spacing:4px;text-align:center"
+        style="text-align:center;letter-spacing:6px;font-family:'Noto Sans KR',sans-serif"
+        inputmode="numeric"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"
         onkeydown="if(event.key==='Enter')submitDelete()">
       <div id="d-error" style="font-size:12px;color:#e74c3c;display:none;margin-top:5px">❌ 비밀번호가 틀렸습니다</div>
     </div>
@@ -3252,7 +3258,7 @@ function renderBubble(node,ci,depth=0){
       return `${depth>0?`<div class="connector" style="background:${pc}40;opacity:.3"></div>`:''}
       <div class="bubble-wrap">
         <div class="pending-bubble" role="button" tabindex="0" aria-label="${escapeHtml(node.nomineeName)}님 늦은 릴레이 참여하기"
-          onclick="openFormFromPending('${jsStr(node.company)}','${jsStr(node.parentId)}','${jsStr(node.fromName)}','${jsStr(node.nomineeName)}', true)"
+          onclick="requestPendingAccess('${jsStr(node.company)}','${jsStr(node.parentId)}','${jsStr(node.fromName)}','${jsStr(node.nomineeName)}', true)"
           style="cursor:pointer;border:1.5px dashed ${pc}60;background:var(--bg);flex-direction:column;gap:6px;padding:14px 16px;opacity:.7;transition:all .2s"
           onmouseenter="this.style.opacity='.9';this.style.background='${CO_DIM[ci]}'"
           onmouseleave="this.style.opacity='.7';this.style.background='var(--bg)'">
@@ -3273,7 +3279,8 @@ function renderBubble(node,ci,depth=0){
     // 5분 대기 중일 때는 잠금 표시
     if(stillWaiting){
       return `<div class="bubble-wrap">
-        <div class="pending-bubble"
+        <div class="pending-bubble" id="pending-wait-${node.id}"
+          data-wait-until="${node.createdAt + FIVE_MIN}"
           style="cursor:not-allowed;border:1.5px dashed ${pc}80;background:${CO_DIM[ci]};flex-direction:column;gap:6px;padding:14px 16px;opacity:.7">
           <div style="font-size:12px;font-weight:600;color:${pc};text-align:center">💫 내부자산으로 연결중</div>
           <div style="display:flex;align-items:center;gap:10px;width:100%">
@@ -3282,7 +3289,7 @@ function renderBubble(node,ci,depth=0){
               <div class="pending-name" style="color:var(--navy)">${escapeHtml(node.nomineeName)}</div>
               <div class="pending-from" style="color:var(--text3)">${escapeHtml(node.fromName)}님의 지목</div>
             </div>
-            <div class="pending-timer" style="color:${pc};flex-shrink:0;font-weight:700;font-family:'DM Mono',monospace">${waitMin}m ${waitSec}s</div>
+            <div class="pending-timer wait-timer" id="wait-timer-${node.id}" style="color:${pc};flex-shrink:0;font-weight:700;font-family:'DM Mono',monospace">${waitMin}:${String(waitSec).padStart(2,'0')}</div>
           </div>
           <div style="font-size:10px;color:var(--text3);text-align:center">잠시 후 참여할 수 있어요</div>
         </div>
@@ -3292,7 +3299,7 @@ function renderBubble(node,ci,depth=0){
     
     return `<div class="bubble-wrap">
       <div class="pending-bubble" role="button" tabindex="0" aria-label="${escapeHtml(node.nomineeName)}님 릴레이 참여하기"
-        onclick="openFormFromPending('${jsStr(node.company)}','${jsStr(node.parentId)}','${jsStr(node.fromName)}','${jsStr(node.nomineeName)}')"
+        onclick="requestPendingAccess('${jsStr(node.company)}','${jsStr(node.parentId)}','${jsStr(node.fromName)}','${jsStr(node.nomineeName)}', false)"
         style="cursor:pointer;transition:all .2s;border:1.5px dashed ${pc};background:${CO_DIM[ci]};flex-direction:column;gap:6px;padding:14px 16px"
         onmouseenter="this.style.borderColor='${pc}';this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)';this.style.transform='translateY(-1px)'"
         onmouseleave="this.style.borderColor='${pc}';this.style.boxShadow='';this.style.transform=''">
@@ -3350,6 +3357,9 @@ function renderBubble(node,ci,depth=0){
             title="좋아요">
             ${isLiked?'❤️':'🤍'}${likeCount>0?`<span style="font-size:10px;margin-left:1px">${likeCount}</span>`:''}
           </button>
+          ${node.nomineeName?`<button class="action-btn share-link" id="share-${node.id}" 
+            onclick="event.stopPropagation();copyRelayLink('${node.id}')" 
+            title="릴레이 링크 복사">🔗</button>`:''}
           <button class="action-btn edit" onclick="event.stopPropagation();openEditNode('${node.id}')" title="수정">✏️</button>
           <button class="action-btn del" onclick="event.stopPropagation();confirmDelete('${node.id}')" title="삭제">🗑</button>
         </div>
@@ -3622,6 +3632,131 @@ function renderTags(wrapId,inputId,tagsArr){
 }
 
 // ===== FORM =====
+// ⭐ pending 카드 직접 클릭 시 → 비번 검증 모달 (옆자리 무단 작성 방지)
+//   카톡 링크 클릭은 applyNomineeFromUrl이 직접 openFormFromPending 호출하여 우회
+function requestPendingAccess(company, parentId, fromName, nomineeName, isLate){
+  // 관리자 모드면 검증 우회
+  if(IS_ADMIN){
+    openFormFromPending(company, parentId, fromName, nomineeName, isLate);
+    return;
+  }
+  
+  // root(parentId 없음)이거나 parent를 못 찾는 경우 → 검증 없이 진행
+  const parent = parentId ? DATA.find(d=>d.id===parentId) : null;
+  if(!parent || !parent.pinHash){
+    openFormFromPending(company, parentId, fromName, nomineeName, isLate);
+    return;
+  }
+  
+  // 5분 대기 중인지 체크
+  const elapsed = Date.now() - parent.createdAt;
+  const FIVE_MIN = 5 * 60 * 1000;
+  if(elapsed < FIVE_MIN && !isLate){
+    const remainSec = Math.ceil((FIVE_MIN - elapsed) / 1000);
+    const m = Math.floor(remainSec/60);
+    const s = remainSec%60;
+    showToast(`💫 ${m}분 ${s}초 후 참여 가능해요`,'error');
+    return;
+  }
+  
+  // 비번 입력 모달 표시
+  showPinAccessModal(parent, ()=>{
+    // 검증 성공 시 폼 열기
+    openFormFromPending(company, parentId, fromName, nomineeName, isLate);
+  });
+}
+
+// ⭐ pending 접근용 비번 입력 모달
+function showPinAccessModal(parentNode, onSuccess){
+  // 이전 모달 제거
+  const existing = document.getElementById('pin-access-modal');
+  if(existing) existing.remove();
+  
+  const html = `
+    <div class="modal-overlay open" id="pin-access-modal" onclick="if(event.target===this)closePinAccessModal()">
+      <div class="modal" style="max-width:380px">
+        <div style="text-align:center;margin-bottom:18px">
+          <div style="font-size:42px;margin-bottom:8px">🔐</div>
+          <div class="modal-title" style="font-size:17px;justify-content:center">참여 인증</div>
+          <div class="modal-sub" style="text-align:center;margin-top:6px;line-height:1.5">
+            <strong>${escapeHtml(parentNode.name)} ${escapeHtml(parentNode.role||'')}</strong>님이 설정한<br>
+            <strong style="color:var(--accent)">4자리 비밀번호</strong>를 입력해주세요
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <input type="text" inputmode="numeric" maxlength="4" id="pin-access-input" 
+            class="form-input" 
+            placeholder="숫자 4자리" 
+            autocomplete="off"
+            style="text-align:center;letter-spacing:6px;font-family:'Noto Sans KR',sans-serif"
+            onkeydown="if(event.key==='Enter')submitPinAccess()"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)">
+        </div>
+        
+        <div id="pin-access-error" style="display:none;color:var(--danger);font-size:12px;text-align:center;margin-top:8px">
+          ❌ 비밀번호가 일치하지 않아요
+        </div>
+        
+        <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;background:var(--bg);padding:10px;border-radius:6px;margin-top:14px">
+          💡 ${escapeHtml(parentNode.name)}님께 비밀번호를 받아 입력해주세요.<br>
+          또는 받은 <strong>릴레이 링크</strong>를 클릭하면 자동 인증돼요.
+        </div>
+        
+        <div class="modal-actions" style="margin-top:14px">
+          <button class="btn" onclick="closePinAccessModal()">취소</button>
+          <button class="btn btn-accent" onclick="submitPinAccess()">확인</button>
+        </div>
+      </div>
+    </div>
+  `;
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  document.body.appendChild(div.firstElementChild);
+  
+  // 콜백 저장
+  window._pinAccessParent = parentNode;
+  window._pinAccessCallback = onSuccess;
+  
+  setTimeout(()=>{
+    const inp = document.getElementById('pin-access-input');
+    if(inp) inp.focus();
+  },150);
+}
+
+function closePinAccessModal(){
+  const el = document.getElementById('pin-access-modal');
+  if(el) el.remove();
+  window._pinAccessParent = null;
+  window._pinAccessCallback = null;
+}
+
+function submitPinAccess(){
+  const pin = document.getElementById('pin-access-input')?.value?.trim() || '';
+  const parent = window._pinAccessParent;
+  const onSuccess = window._pinAccessCallback;
+  
+  if(!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)){
+    document.getElementById('pin-access-error').style.display='block';
+    document.getElementById('pin-access-error').textContent='⚠️ 숫자 4자리를 입력해주세요';
+    return;
+  }
+  
+  // 비번 해시 검증 (등록 시 동일한 방식: btoa(pin + '_wr_' + name))
+  const expectedHash = btoa(unescape(encodeURIComponent(pin+'_wr_'+parent.name)));
+  if(expectedHash !== parent.pinHash){
+    document.getElementById('pin-access-error').style.display='block';
+    document.getElementById('pin-access-error').textContent='❌ 비밀번호가 일치하지 않아요';
+    document.getElementById('pin-access-input').value='';
+    document.getElementById('pin-access-input').focus();
+    return;
+  }
+  
+  // 검증 성공
+  closePinAccessModal();
+  if(typeof onSuccess === 'function') onSuccess();
+}
+
 function openFormFromPending(company, parentId, fromName, nomineeName, isLate=false){
   // 폼 열기 — 회사/지목자 자동 입력
   openForm(parentId, fromName, company);
@@ -3987,7 +4122,10 @@ function showShareModal(nomineeName, parentId, company, rule){
         <div style="text-align:center;margin-bottom:14px">
           <div id="share-qr" style="display:inline-block;padding:14px;background:#fff;border:2px solid var(--accent);border-radius:14px;line-height:0;box-shadow:0 4px 16px rgba(0,178,169,.15)"></div>
           <div style="font-size:12px;color:var(--text2);margin-top:10px;font-weight:600">📱 휴대폰 카메라로 QR 스캔</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">옆자리 동료에게 보여주면 바로 참여 가능!</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;margin-bottom:8px">옆자리 동료에게 보여주면 바로 참여 가능!</div>
+          <button class="btn" style="font-size:12px;padding:6px 14px" onclick="downloadQR('${jsStr(nomineeName)}')">
+            💾 QR 이미지 저장
+          </button>
         </div>
         
         <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;background:var(--accent-dim);padding:10px;border-radius:6px;margin-bottom:14px">
@@ -4013,6 +4151,94 @@ function showShareModal(nomineeName, parentId, company, rule){
       const el=document.getElementById('share-qr'); if(el) el.style.display='none';
     }
   }catch(e){ console.warn('QR 생성 실패',e); const el=document.getElementById('share-qr'); if(el) el.style.display='none'; }
+}
+
+// ⭐ QR 코드를 PNG 파일로 다운로드
+function downloadQR(nomineeName){
+  try{
+    const qrEl = document.getElementById('share-qr');
+    if(!qrEl) return;
+    const img = qrEl.querySelector('img');
+    if(!img){showToast('❌ QR 이미지를 찾을 수 없어요','error');return;}
+    
+    // QR 이미지를 캔버스에 그려서 PNG로 변환 (여백 + 흰 배경)
+    const canvas = document.createElement('canvas');
+    const padding = 32;
+    const size = 320;
+    canvas.width = size + padding*2;
+    canvas.height = size + padding*2 + 60; // 하단 텍스트 공간
+    const ctx = canvas.getContext('2d');
+    
+    // 흰 배경
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // QR 그리기
+    const tmpImg = new Image();
+    tmpImg.onload = ()=>{
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(tmpImg, padding, padding, size, size);
+      
+      // 하단 텍스트
+      ctx.fillStyle = '#1A2433';
+      ctx.font = 'bold 16px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🏆 Winning Rules Challenge', canvas.width/2, size + padding + 26);
+      ctx.fillStyle = '#73848A';
+      ctx.font = '13px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+      ctx.fillText((nomineeName||'동료')+'님께 릴레이', canvas.width/2, size + padding + 48);
+      
+      // 다운로드 트리거
+      canvas.toBlob(blob=>{
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const safeName = (nomineeName||'nominee').replace(/[^가-힣a-zA-Z0-9]/g,'_');
+        a.download = `winning-rules-qr-${safeName}.png`;
+        a.href = url;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+        showToast('💾 QR 이미지가 저장되었어요!','success');
+      },'image/png');
+    };
+    tmpImg.src = img.src;
+  }catch(e){
+    console.error('QR 다운로드 실패:', e);
+    showToast('❌ QR 저장 실패','error');
+  }
+}
+
+// ⭐ 게시물 옆 릴레이 링크 복사 (5분 룰 + 백도어 방지)
+function copyRelayLink(nodeId){
+  const node = DATA.find(n=>n.id===nodeId);
+  if(!node){showToast('❌ 게시글을 찾을 수 없어요','error');return;}
+  if(!node.nomineeName){showToast('❌ 지목 정보가 없어요','error');return;}
+  
+  // ⏱ 5분 대기 체크 (백도어 방지)
+  const elapsed = Date.now() - (node.createdAt||0);
+  const FIVE_MIN = 5 * 60 * 1000;
+  if(elapsed < FIVE_MIN){
+    const remainSec = Math.ceil((FIVE_MIN - elapsed) / 1000);
+    const m = Math.floor(remainSec/60);
+    const s = remainSec%60;
+    showToast(`💫 ${m}분 ${s}초 후 링크 복사가 가능해요`,'error');
+    return;
+  }
+  
+  // 5분 경과 → 링크 생성 + 복사
+  const link = generateNomineeLink(node.id, node.nomineeName, node.company, node.rule, node.comment, node.name);
+  navigator.clipboard.writeText(link).then(()=>{
+    showToast('✅ 릴레이 링크가 복사되었어요!','success');
+  }).catch(err=>{
+    // 폴백
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 릴레이 링크가 복사되었어요!','success');
+  });
 }
 
 function copyShareLink(link){
@@ -4711,6 +4937,31 @@ function applyNomineeFromUrl() {
   }
 }
 
+
+// ⭐ 5분 대기 카운트다운 - 1초마다 pending wait-timer 요소만 가볍게 업데이트
+setInterval(()=>{
+  const timers = document.querySelectorAll('.wait-timer[id^="wait-timer-"]');
+  let needsFullRender = false;
+  timers.forEach(el=>{
+    const parent = el.closest('[data-wait-until]');
+    if(!parent) return;
+    const waitUntil = parseInt(parent.getAttribute('data-wait-until'),10);
+    if(!waitUntil) return;
+    const remain = waitUntil - Date.now();
+    if(remain <= 0){
+      // 5분 경과 → 전체 렌더로 잠금 해제
+      needsFullRender = true;
+    } else {
+      const sec = Math.ceil(remain/1000);
+      const m = Math.floor(sec/60);
+      const s = sec%60;
+      el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+    }
+  });
+  if(needsFullRender){
+    try{render();}catch(e){console.warn('5분 해제 render 실패',e);}
+  }
+},1000);
 
 // ===== D-DAY 카운트다운 =====
 let cdInterval=null;
