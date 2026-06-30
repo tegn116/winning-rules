@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Winning Rules Challenge — 상상인 그룹</title>
+<title>INSIGHT OUT — 상상인 그룹</title>
 <!-- 메신저(카톡/슬랙 등) 링크 미리보기용 OG 태그.
      ※ 썸네일 이미지는 공개 URL이 필요합니다 — 호스팅 후 아래 og:image 주석을 풀고 실제 이미지 주소를 넣으세요. -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Winning Rules Challenge — 상상인 그룹">
+<meta property="og:title" content="INSIGHT OUT — 상상인 그룹">
 <meta property="og:description" content="행동강령과 연결된 한줄 인사이트를 공유하고 동료에게 이어가는 릴레이 지식 공유 챌린지">
 <meta property="og:site_name" content="상상인 그룹">
 <!-- <meta property="og:image" content="https://<배포주소>/og-thumb.png"> -->
@@ -57,8 +57,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .hero-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(0,178,169,.3);padding:5px 12px;border-radius:20px;margin-bottom:16px;width:fit-content}
 .pulse{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
-.hero h1{font-family:'Pretendard','Playfair Display',serif;font-size:clamp(28px,3.2vw,46px);color:var(--navy);line-height:1.15;margin-bottom:14px;letter-spacing:-.035em;font-weight:700;text-wrap:balance}
-.hero h1 em{font-family:'Playfair Display','Pretendard',serif;font-style:italic;color:var(--accent);font-weight:600;letter-spacing:-.02em;padding:0 2px}
+.hero h1{font-family:'Pretendard','Playfair Display',serif;font-size:clamp(36px,4.5vw,64px);color:var(--navy);line-height:1.1;margin-bottom:6px;letter-spacing:-.02em;font-weight:800;text-wrap:balance}
+.hero-subtitle{font-size:clamp(15px,1.6vw,18px);color:var(--text2);font-weight:600;margin-bottom:14px;letter-spacing:-.01em}
 .hero-sub{font-size:14px;color:var(--text2);line-height:1.8;max-width:none;margin-bottom:22px;white-space:nowrap}
 .hero-pills{display:flex;gap:7px;flex-wrap:wrap}
 .hero-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
@@ -217,17 +217,55 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   .co-select-row{gap:6px}
   .co-select-card{padding:10px 5px}
   .co-select-name{font-size:10px}
+  /* ⭐ 모바일 회사 선택: 가로 스와이프 가능한 탭 형태 */
+  #co-select-row{
+    flex-wrap:nowrap!important;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
+    padding-bottom:6px;
+    margin:0 -6px;
+    padding-left:6px;
+    padding-right:6px;
+  }
+  #co-select-row .co-select-card{
+    flex:none!important;
+    min-width:90px;
+    scroll-snap-align:start;
+  }
+  /* 스크롤 인디케이터 (모바일에서만) */
+  #co-select-row::after{
+    content:'';
+    flex:none;
+    width:8px;
+  }
   .nav-actions .btn:not(.btn-accent){display:none}
   .nav-title{font-size:12px}
   .cd-num{font-size:16px;padding:2px 6px;min-width:28px}
+  /* 카톡 브라우저: hero 영역 텍스트 줄바꿈 허용 */
+  .hero-sub{white-space:normal!important;font-size:13px;line-height:1.6}
+  /* 모달 width 100% (안드로이드 작은 화면) */
+  .modal{max-width:94vw;width:auto}
+  /* 입력 필드 폰트 16px 이상 (iOS Safari zoom 방지 + 안드 가독성) */
+  input,select,textarea{font-size:16px!important}
 }
 @media(max-width:420px){
   .four-col{grid-template-columns:1fr}
   .bubble{padding:12px}
   .bubble-avatar{width:28px;height:28px;font-size:10px}
   .action-btn{width:24px;height:24px;font-size:11px}
-  .hero h1{font-size:22px}
+  .hero h1{font-size:38px;line-height:1.05}
+  .hero-subtitle{font-size:13px}
+  .hero-sub{font-size:12px}
 }
+/* 카카오톡 인앱 브라우저 등 작은 화면 추가 보정 */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  input,textarea{font-size:16px}
+}
+/* 안드로이드 카톡 브라우저에서 가로 스크롤 방지 */
+html,body{overflow-x:hidden;max-width:100vw}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
@@ -246,8 +284,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .cd-toggle:hover{background:rgba(255,255,255,.25)}
 
 /* 행동강령 필터 */
-.rule-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-wrap:nowrap}
-.rule-filter-bar::-webkit-scrollbar{height:3px}
+.rule-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;max-height:80px;overflow:hidden;position:relative;transition:max-height .3s ease}
+.rule-filter-bar.expanded{max-height:500px}
+.rule-filter-bar::-webkit-scrollbar{display:none}
 .rule-filter-label{font-size:10px;font-weight:700;color:var(--text3);white-space:nowrap;flex-shrink:0;letter-spacing:.08em;text-transform:uppercase;padding-right:6px;border-right:1px solid var(--border);margin-right:2px}
 .rule-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;font-weight:500}
 .rule-chip:hover{border-color:var(--accent);color:var(--accent)}
@@ -266,8 +305,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .co-select-name{font-size:11px;font-weight:700;line-height:1.3}
 
 /* 해시태그 필터 */
-.tag-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-wrap:nowrap}
-.tag-filter-bar::-webkit-scrollbar{height:3px}
+.tag-filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;max-height:80px;overflow:hidden;position:relative;transition:max-height .3s ease}
+.tag-filter-bar.expanded{max-height:500px}
+.tag-filter-bar::-webkit-scrollbar{display:none}
 .tag-filter-label{font-size:11px;font-weight:700;color:var(--text3);white-space:nowrap;flex-shrink:0;letter-spacing:.06em;text-transform:uppercase}
 .tag-filter-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .tag-filter-chip:hover{border-color:var(--accent);color:var(--accent)}
@@ -391,8 +431,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .ctrl-btn.active .ctrl-badge{background:#fff;color:var(--navy)}
 .collapsible{display:none}
 .collapsible.open{display:block}
-.tl-bar{display:none;background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;align-items:center;gap:12px;overflow-x:auto}
+.tl-bar{display:none;background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;align-items:flex-start;gap:12px;flex-wrap:wrap;max-height:80px;overflow:hidden;position:relative;transition:max-height .3s ease}
 .tl-bar.open{display:flex}
+.tl-bar.expanded{max-height:500px}
 /* 커스텀 클릭 요소 키보드 포커스 표시 */
 .pending-bubble[role=button]:focus-visible,.empty-col[role=button]:focus-visible,.co-select-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:640px){.controls-bar{padding:8px 16px}.tl-bar{padding:10px 16px}}
@@ -2714,7 +2755,7 @@ var qrcode = function() {
   <div class="nav-logo">
     <img class="logo" id="logo-img" src="" alt="상상인">
     <div class="nav-divider"></div>
-    <span class="nav-title">Winning Rules Challenge</span>
+    <span class="nav-title">INSIGHT OUT</span>
   </div>
 
   <!-- COUNTDOWN — 상단 같은 행에 내장 -->
@@ -2746,7 +2787,8 @@ var qrcode = function() {
   <div class="hero-inner">
     <div class="hero-left">
       <div class="hero-label"><div class="pulse"></div> 챌린지 진행 중</div>
-      <h1>외부 인사이트를 <em>내부자산</em>으로</h1>
+      <h1>INSIGHT OUT</h1>
+      <div class="hero-subtitle">외부 인사이트를 내부 자산으로 연결한다</div>
       <p class="hero-sub">행동강령과 연결된 업무·일상의 순간을 한줄로 공유하고,<br>동료에게 이어가는 릴레이 지식 공유 챌린지입니다.</p>
       <div class="hero-pills">
         <span class="hero-pill">✍ 한줄평 공유</span>
@@ -2789,7 +2831,8 @@ var qrcode = function() {
 <!-- 인기글 (접힘 기본) -->
 <div class="tl-bar" id="top-liked-bar">
   <span style="font-size:11px;font-weight:700;color:#e74c3c;white-space:nowrap;flex-shrink:0">❤️ 인기 인사이트</span>
-  <div id="top-liked-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  <div id="top-liked-list" style="display:contents"></div>
+  <button class="rule-chip more-chip" id="liked-more-btn" onclick="toggleFilterExpand('top-liked-bar')" style="display:none;background:var(--bg2);border-style:dashed">⋯ 더보기</button>
 </div>
 
 <!-- 필터 패널 (접힘 기본): 행동강령 + 태그 -->
@@ -2808,13 +2851,15 @@ var qrcode = function() {
   <button class="rule-chip" data-rule="우리는 뒤에서 말하지 않는다" onclick="filterByRule('우리는 뒤에서 말하지 않는다')">우리는 뒤에서 말하지 않는다</button>
   <button class="rule-chip" data-rule="동료의 의견을 듣는 것도 월급에 포함이다" onclick="filterByRule('동료의 의견을 듣는 것도 월급에 포함이다')">동료의 의견을 듣는 것도 월급에 포함이다</button>
   <button class="rule-chip" data-rule="다름을 인정하라. 내가 틀릴 수도 있다" onclick="filterByRule('다름을 인정하라. 내가 틀릴 수도 있다')">다름을 인정하라. 내가 틀릴 수도 있다</button>
+  <button class="rule-chip more-chip" id="rule-more-btn" onclick="toggleFilterExpand('rule-filter-bar')" style="display:none;background:var(--bg2);border-style:dashed">⋯ 더보기</button>
 </div>
 
 <!-- TAG FILTER BAR -->
 <div class="tag-filter-bar" id="tag-filter-bar" style="display:none">
   <span class="tag-filter-label">🏷 태그</span>
   <button class="tag-filter-chip active" onclick="clearAllFilters()" id="tag-all">전체</button>
-  <div id="tag-chips"></div>
+  <div id="tag-chips" style="display:contents"></div>
+  <button class="rule-chip more-chip" id="tag-more-btn" onclick="toggleFilterExpand('tag-filter-bar')" style="display:none;background:var(--bg2);border-style:dashed">⋯ 더보기</button>
 </div>
 </div><!-- /filter-panel -->
 
@@ -3326,7 +3371,16 @@ function renderBubble(node,ci,depth=0){
   const tags=(node.hashtags||[]).map(t=>`<span class="tag">#${escapeHtml(t.replace(/^#/,''))}</span>`).join('');
   const dateStr=formatDate(node.createdAt);
   const isRoot=depth===0;
-  const postExpired=isExpired(node.createdAt); // 48시간 경과 여부
+  // ⭐ 만료 판정 변경: 부모가 나를 지목한 후 48시간을 초과해 늦게 등록한 본인 카드만 만료 처리
+  //   (이전 로직: 본인 카드 createdAt 자체가 48시간 지난 경우 — 부적절했음)
+  //   root(첫 게시글)는 부모가 없으므로 만료되지 않음
+  let postExpired = false;
+  if (!isRoot && node.parentId) {
+    const parentNode = DATA.find(d => d.id === node.parentId);
+    if (parentNode && parentNode.createdAt) {
+      postExpired = (node.createdAt - parentNode.createdAt) > 48 * 3600000;
+    }
+  }
   const sessionId=getSessionId();
   // 좋아요는 서버(node.likes) 기준으로 표시 — 모든 접속자에게 취합되어 보이도록.
   // 서버값이 없을 때(오프라인 등)만 localStorage 백업을 사용한다.
@@ -3578,9 +3632,8 @@ function renderLeaderboard(){
   const total=scores.reduce((s,x)=>s+x.score,0);
   if(total===0){ wrap.style.display='none'; return; }
   wrap.style.display='block';
-  const totalPeople=scores.reduce((s,x)=>s+x.participation,0);
   const totalEl=document.getElementById('lb-total');
-  if(totalEl) totalEl.textContent='전체 '+totalPeople+'명';
+  if(totalEl) totalEl.textContent='';  // ⭐ 전체 인원 표시 제거
   const max=Math.max(...scores.map(x=>x.score),1);
   const medals=['🥇','🥈','🥉'];
   rowsEl.innerHTML=scores.map((x,i)=>{
@@ -3593,7 +3646,7 @@ function renderLeaderboard(){
       <div class="lb-name" title="${escapeHtml(x.co)}">${escapeHtml(x.co)}</div>
       <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%;background:${c}"></div></div>
       <div class="lb-score" style="color:${c}">${x.score}</div>
-      <div class="lb-break">참여 ${x.participation} · ❤ ${x.likes} · 🔥 ${x.combo}콤보${x.expiredCount>0?` · ⏱ 만료 ${x.expiredCount}`:''}</div>
+      <div class="lb-break">참여 ${x.participation} · ❤ ${x.likes} · 🔥 ${x.combo}콤보 · ⏱ 만료 ${x.expiredCount||0}</div>
     </div>`;
   }).join('');
 }
@@ -4382,10 +4435,54 @@ function renderTagFilterBar(){
   // 행동강령 칩 active 업데이트 — data-rule 속성으로 안전하게
   document.querySelectorAll('.rule-chip').forEach(c=>{
     if(c.id==='rule-all'){c.className='rule-chip '+(allActive?'active':'');return;}
+    if(c.classList.contains('more-chip'))return;
     const rule=c.getAttribute('data-rule');
     if(rule)c.className='rule-chip '+(ACTIVE_RULES.has(rule)?'active':'');
   });
+  // ⭐ 2줄 넘는지 체크 → 더보기 버튼 표시/숨김
+  setTimeout(checkFilterOverflow, 50);
 }
+
+// ⭐ 필터바가 2줄을 넘기는지 감지해서 '더보기' 버튼 표시
+function checkFilterOverflow(){
+  const bars = [
+    {bar:'rule-filter-bar', btn:'rule-more-btn'},
+    {bar:'tag-filter-bar', btn:'tag-more-btn'},
+    {bar:'top-liked-bar', btn:'liked-more-btn'}
+  ];
+  bars.forEach(({bar:barId, btn:btnId})=>{
+    const bar=document.getElementById(barId);
+    if(!bar)return;
+    const isDisplayed = bar.classList.contains('open') || (bar.style.display!=='none' && barId!=='top-liked-bar');
+    if(!isDisplayed){return;}
+    const moreBtn=document.getElementById(btnId);
+    if(!moreBtn)return;
+    // expanded 상태가 아닐 때만 체크
+    if(bar.classList.contains('expanded')){
+      moreBtn.style.display='inline-flex';
+      moreBtn.textContent='⋯ 접기';
+      return;
+    }
+    moreBtn.style.display='none';
+    // scrollHeight가 clientHeight(2줄=80px)보다 크면 넘침
+    if(bar.scrollHeight > bar.clientHeight + 4){
+      moreBtn.style.display='inline-flex';
+      moreBtn.textContent='⋯ 더보기';
+    }
+  });
+}
+
+function toggleFilterExpand(barId){
+  const bar=document.getElementById(barId);
+  if(!bar)return;
+  bar.classList.toggle('expanded');
+  checkFilterOverflow();
+}
+
+// 윈도우 리사이즈 시 재계산
+window.addEventListener('resize', ()=>{
+  if(typeof checkFilterOverflow==='function') checkFilterOverflow();
+});
 
 function toggleTagFilter(tag){
   if(ACTIVE_TAGS.has(tag))ACTIVE_TAGS.delete(tag);
@@ -4489,6 +4586,8 @@ function renderTopLiked(){
       <span style="color:#e74c3c;font-weight:700">❤️ ${d.likes}</span>
     </span>`;
   }).join('');
+  // ⭐ 인기글도 2줄 넘으면 더보기 버튼 표시
+  setTimeout(()=>{if(typeof checkFilterOverflow==='function')checkFilterOverflow();}, 50);
 }
 
 // ===== 첫 화면 토글 (필터 / 인기글) =====
