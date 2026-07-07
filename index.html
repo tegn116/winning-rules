@@ -4050,6 +4050,8 @@ function updateRuleHint(){
     hintEl.style.display='none';
   }
 }
+
+function checkNomineeConflict(){
   const company=document.getElementById('f-company').value;
   const nominee=document.getElementById('f-nominee').value.trim();
   const myName=document.getElementById('f-name')?.value.trim()||'';
