@@ -4500,32 +4500,65 @@ function toggleFilterExpand(barId){
   checkFilterOverflow();
 }
 
+// ⭐ 현재 활성 회사 필터 (null이면 전체 표시)
+let ACTIVE_COMPANY = null;
+
 // ⭐ 회사 필터 칩 렌더링 (모바일 전용)
 function renderCompanyChips(){
   const container=document.getElementById('company-chips');
   if(!container)return;
   container.innerHTML=COMPANIES.map(co=>
-    `<button class="co-chip" onclick="scrollToCompany('${jsStr(co)}')">${escapeHtml(co)}</button>`
+    `<button class="co-chip" onclick="toggleCompanyFilter('${jsStr(co)}')">${escapeHtml(co)}</button>`
   ).join('');
+  updateCompanyActiveChip(ACTIVE_COMPANY);
+  applyCompanyFilter();
   setTimeout(checkFilterOverflow, 50);
 }
 
-// ⭐ 페이지 최상단으로 스크롤
+// ⭐ 페이지 최상단으로 스크롤 + 필터 해제
 function scrollToTop(){
-  window.scrollTo({top:0,behavior:'smooth'});
+  ACTIVE_COMPANY = null;
+  applyCompanyFilter();
   updateCompanyActiveChip(null);
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ⭐ 특정 회사 컬럼으로 부드럽게 스크롤
-function scrollToCompany(companyName){
-  const col=document.querySelector(`[data-company="${companyName}"]`);
-  if(!col){console.warn('컬럼을 찾을 수 없습니다:', companyName);return;}
-  // 상단 고정 요소들의 높이 계산 (nav-top 등)
-  const navTop=document.querySelector('.nav-top');
-  const offset=(navTop?navTop.offsetHeight:0)+10;
-  const y=col.getBoundingClientRect().top+window.pageYOffset-offset;
-  window.scrollTo({top:y,behavior:'smooth'});
-  updateCompanyActiveChip(companyName);
+// ⭐ 회사 필터 토글 (같은 회사 다시 클릭하면 해제)
+function toggleCompanyFilter(companyName){
+  if(ACTIVE_COMPANY === companyName){
+    // 같은 회사 다시 클릭 → 필터 해제 (전체 표시)
+    ACTIVE_COMPANY = null;
+    applyCompanyFilter();
+    updateCompanyActiveChip(null);
+  } else {
+    // 새로운 회사 선택 → 필터 적용 + 스크롤
+    ACTIVE_COMPANY = companyName;
+    applyCompanyFilter();
+    updateCompanyActiveChip(companyName);
+    // 필터 적용 후 스크롤 (렌더 반영 후)
+    requestAnimationFrame(()=>{
+      const col=document.querySelector(`[data-company="${companyName}"]`);
+      if(col){
+        const navTop=document.querySelector('.nav-top');
+        const offset=(navTop?navTop.offsetHeight:0)+10;
+        const y=col.getBoundingClientRect().top+window.pageYOffset-offset;
+        window.scrollTo({top:y,behavior:'smooth'});
+      }
+    });
+  }
+}
+
+// ⭐ 회사 필터 실제 적용 (모바일에서만 다른 컬럼 숨김)
+function applyCompanyFilter(){
+  const isMobile = window.matchMedia('(max-width: 640px)').matches;
+  document.querySelectorAll('[data-company]').forEach(col=>{
+    const co = col.getAttribute('data-company');
+    if(!isMobile || !ACTIVE_COMPANY){
+      col.style.display = '';
+    } else {
+      col.style.display = (co === ACTIVE_COMPANY) ? '' : 'none';
+    }
+  });
 }
 
 // ⭐ 회사 칩 active 상태 업데이트
@@ -4538,9 +4571,10 @@ function updateCompanyActiveChip(companyName){
   });
 }
 
-// 윈도우 리사이즈 시 재계산
+// 윈도우 리사이즈 시 재계산 + 필터 재적용
 window.addEventListener('resize', ()=>{
   if(typeof checkFilterOverflow==='function') checkFilterOverflow();
+  if(typeof applyCompanyFilter==='function') applyCompanyFilter();
 });
 
 function toggleTagFilter(tag){
