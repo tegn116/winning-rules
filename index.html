@@ -147,6 +147,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .modal-title{font-family:'Noto Sans KR',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--navy);margin-bottom:4px}
 .modal-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
 .form-label{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.04em;margin-bottom:5px;display:block}
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--navy);color:#fff;font-size:9px;font-weight:800;margin-right:4px;vertical-align:1px}
 .form-row{margin-bottom:14px}
 .form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .15s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:#fff}
@@ -2960,13 +2961,12 @@ var qrcode = function() {
       </div>
     </div>
     <div class="form-row">
-      <label class="form-label">한줄평 * <span style="font-weight:400;color:var(--text3)">— 행동강령과 연결된 업무·일상의 순간</span></label>
-      <textarea class="form-textarea" id="f-comment" maxlength="300" placeholder="예: 오늘 고객 미팅에서 미처 몰랐던 니즈를 발견했다. 듣는 것이 먼저라는 걸 다시 느꼈다."></textarea>
-    </div>
-    <div class="form-row">
-      <label class="form-label">연결할 행동강령 *</label>
-      <select class="form-select" id="f-rule">
-        <option value="">선택하세요</option>
+      <label class="form-label">
+        <span class="step-badge">1</span> 연결할 행동강령 * 
+        <span style="font-weight:400;color:var(--text3)">— 어떤 강령을 실천했나요?</span>
+      </label>
+      <select class="form-select" id="f-rule" onchange="updateRuleHint()">
+        <option value="">9가지 중 하나를 선택하세요</option>
         <option>변화를 이끌거나, 비키거나</option>
         <option>완성보다 속도, 성공보다 시도</option>
         <option>배움은 생존을 위한 가장 공격적인 투자</option>
@@ -2977,9 +2977,20 @@ var qrcode = function() {
         <option>동료의 의견을 듣는 것도 월급에 포함이다</option>
         <option>다름을 인정하라. 내가 틀릴 수도 있다</option>
       </select>
+      <div id="f-rule-hint" class="form-hint" style="display:none;margin-top:6px;padding:8px 10px;background:var(--bg2);border-radius:6px;border-left:3px solid var(--accent);color:var(--text2);line-height:1.5"></div>
     </div>
     <div class="form-row">
-      <label class="form-label">분야 해시태그</label>
+      <label class="form-label">
+        <span class="step-badge">2</span> 한줄평 * 
+        <span style="font-weight:400;color:var(--text3)">— 강령과 연결된 순간을 자유롭게</span>
+      </label>
+      <textarea class="form-textarea" id="f-comment" maxlength="300" placeholder="예: 오늘 고객 미팅에서 미처 몰랐던 니즈를 발견했다. 듣는 것이 먼저라는 걸 다시 느꼈다."></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label">
+        <span class="step-badge">3</span> 분야 해시태그 
+        <span style="font-weight:400;color:var(--text3)">— 선택 (있으면 좋아요)</span>
+      </label>
       <div class="tag-input-wrap" id="tag-wrap" onclick="document.getElementById('tag-text').focus()">
         <input class="tag-text-input" id="tag-text" placeholder="#업무 #일상 #팀워크..." maxlength="20">
       </div>
@@ -2987,7 +2998,9 @@ var qrcode = function() {
     </div>
     <div class="form-grid2">
       <div class="form-row">
-        <label class="form-label">지목할 동료 이름 *</label>
+        <label class="form-label">
+          <span class="step-badge">4</span> 지목할 동료 이름 *
+        </label>
         <input class="form-input" id="f-nominee" placeholder="김태근" type="text" maxlength="20" oninput="checkNomineeConflict()">
       </div>
       <div class="form-row">
@@ -3857,23 +3870,46 @@ function openFormFromPending(company, parentId, fromName, nomineeName, isLate=fa
         roleEl.style.cursor = 'not-allowed';
       }
       
-      // 안내 메시지 표시
+      // ⭐ 앞 사람이 남긴 인사이트 미리보기
+      const parentData = DATA.find(d => d.id === parentId);
+      const c = CO_COLORS[COMPANIES.indexOf(company)] || 'var(--accent)';
       const modalSub = document.querySelector('#form-modal .modal-sub');
       if(modalSub){
+        let previewHtml = '';
+        if(parentData){
+          previewHtml = `
+            <div style="margin-top:12px;padding:12px 14px;background:${CO_DIM[COMPANIES.indexOf(company)]||'#f5f6f8'};border-left:3px solid ${c};border-radius:8px;text-align:left;font-weight:400;color:var(--text2)">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.05em;font-weight:700">↑ ${escapeHtml(parentData.name)}${parentData.role?' '+escapeHtml(parentData.role):''}님이 나눈 인사이트</div>
+              <div style="font-size:12px;line-height:1.5;color:var(--text);margin-bottom:6px">"${escapeHtml(parentData.comment)}"</div>
+              <div style="font-size:10px;color:${c};font-weight:700">🛡 ${escapeHtml(parentData.rule||'')}</div>
+            </div>
+          `;
+        }
         if(isLate){
-          modalSub.innerHTML = `⏰ <strong>${myName}${myRole?' '+myRole:''}</strong>님 — 늦었지만 참여해주셔서 감사합니다!<br><span style="font-size:11px;color:var(--text3);font-weight:400">⚠️ 48시간 초과로 만료 페널티(-10점)가 적용됩니다</span>`;
-          modalSub.style.color = '#e67e22';
-          modalSub.style.fontWeight = '600';
+          modalSub.innerHTML = `
+            <div style="color:#e67e22;font-weight:700">⏰ <strong>${myName}${myRole?' '+myRole:''}</strong>님 — 늦었지만 참여해주셔서 감사합니다!</div>
+            <div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:3px">⚠️ 48시간 초과로 만료 페널티(-10점)가 적용됩니다</div>
+            ${previewHtml}
+            <div style="margin-top:14px;padding:10px 12px;background:#FFF7ED;border-radius:8px;border:1px dashed #FBBF24;font-size:12px;color:#92400E;text-align:left;font-weight:500">
+              📝 <strong>이제 내 이야기를 나눠주세요!</strong><br>
+              <span style="font-weight:400;line-height:1.6">1️⃣ 행동강령 선택 → 2️⃣ 한줄평 작성 → 3️⃣ 다음 주자 지목</span>
+            </div>
+          `;
         } else {
-          modalSub.innerHTML = `🎯 <strong>${myName}${myRole?' '+myRole:''}</strong>님께 지목된 릴레이입니다`;
-          modalSub.style.color = CO_COLORS[COMPANIES.indexOf(company)] || 'var(--accent)';
-          modalSub.style.fontWeight = '600';
+          modalSub.innerHTML = `
+            <div style="color:${c};font-weight:700">🎯 <strong>${myName}${myRole?' '+myRole:''}</strong>님, 릴레이가 도착했어요!</div>
+            ${previewHtml}
+            <div style="margin-top:14px;padding:10px 12px;background:${CO_DIM[COMPANIES.indexOf(company)]||'#f5f6f8'};border-radius:8px;border:1px dashed ${c}55;font-size:12px;color:var(--text2);text-align:left;font-weight:500">
+              📝 <strong>이제 내 이야기를 나눠주세요!</strong><br>
+              <span style="font-weight:400;line-height:1.6">1️⃣ 행동강령 선택 → 2️⃣ 한줄평 작성 → 3️⃣ 다음 주자 지목</span>
+            </div>
+          `;
         }
       }
       
-      // 한줄평 필드로 포커스 이동
-      const commentEl = document.getElementById('f-comment');
-      if(commentEl)commentEl.focus();
+      // ⭐ 행동강령 필드로 포커스 이동 (B안 순서에 맞춰)
+      const ruleEl = document.getElementById('f-rule');
+      if(ruleEl)ruleEl.focus();
     }, 150);
   }
 }
@@ -3940,6 +3976,9 @@ function openForm(parentId='',fromName='',preCompany=''){
     modalSub.style.color = '';
     modalSub.style.fontWeight = '';
   }
+  // 강령 힌트 리셋
+  const ruleHint = document.getElementById('f-rule-hint');
+  if(ruleHint){ruleHint.style.display='none';ruleHint.innerHTML='';}
   // 카드 초기화
   for(let i=0;i<6;i++){
     const card=document.getElementById('co-card-'+i);
@@ -3987,7 +4026,30 @@ function selectCompany(company, ci){
   el.style.display='none';
 }
 
-function checkNomineeConflict(){
+// ⭐ 선택한 행동강령에 맞는 힌트 표시
+function updateRuleHint(){
+  const ruleEl=document.getElementById('f-rule');
+  const hintEl=document.getElementById('f-rule-hint');
+  if(!ruleEl||!hintEl)return;
+  const rule=ruleEl.value;
+  const HINTS={
+    '변화를 이끌거나, 비키거나':'💡 <strong>기존 방식을 바꾼 경험</strong>이 있나요? 새로운 시도, 관행 개선, 리더십 발휘 순간을 나눠보세요.',
+    '완성보다 속도, 성공보다 시도':'💡 <strong>완벽하진 않아도 빠르게 시도했던</strong> 경험을 공유해보세요. 실패도 좋은 인사이트가 됩니다.',
+    '배움은 생존을 위한 가장 공격적인 투자':'💡 최근 배운 것, 읽은 책, 인상 깊은 강연 등 <strong>내 성장에 도움 된 배움</strong>을 나눠보세요.',
+    '외부 인사이트를 내부 자산으로 연결한다':'💡 밖에서 본 것(<strong>고객·경쟁사·타 산업</strong>)을 우리 일에 어떻게 접목했는지 공유해보세요.',
+    '직급에 상관없이 전원이 의사결정에 참여해야 한다':'💡 <strong>주니어의 의견</strong>이 반영된 경험, 반대로 <strong>내 의견이 채택된</strong> 경험을 나눠보세요.',
+    '우리 팀을 넘어 우리 회사의 답을 찾는다':'💡 <strong>부서 간 협업</strong>으로 문제를 해결한 순간, 큰 그림을 보고 결정한 경험을 공유해보세요.',
+    '우리는 뒤에서 말하지 않는다':'💡 <strong>직접 얼굴 보고 솔직하게 소통</strong>한 경험, 어려운 대화를 잘 풀어낸 순간을 나눠보세요.',
+    '동료의 의견을 듣는 것도 월급에 포함이다':'💡 <strong>동료의 이야기를 진지하게 듣고</strong> 배운 점, 관점이 바뀐 경험을 나눠보세요.',
+    '다름을 인정하라. 내가 틀릴 수도 있다':'💡 <strong>내 생각이 틀렸음을 인정</strong>하고 배웠던 순간, 다양성을 받아들인 경험을 공유해보세요.'
+  };
+  if(rule && HINTS[rule]){
+    hintEl.innerHTML=HINTS[rule];
+    hintEl.style.display='block';
+  } else {
+    hintEl.style.display='none';
+  }
+}
   const company=document.getElementById('f-company').value;
   const nominee=document.getElementById('f-nominee').value.trim();
   const myName=document.getElementById('f-name')?.value.trim()||'';
