@@ -5154,8 +5154,18 @@ window.addEventListener('click',e=>{
 });
 
 // ===== AUTO REFRESH =====
-// 3분마다 자동 새로고침 (탭 활성 상태일 때만)
-setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},180000);
+// 3분마다 자동 새로고침 (탭 활성 상태일 때만) — 데이터 + 전역 설정
+setInterval(()=>{
+  if(!GAS_URL || document.visibilityState!=='visible') return;
+  loadFromSheets();
+  // ⭐ 전역 설정도 함께 재로드 (관리자가 종료일 변경한 경우 다른 사용자에게도 반영)
+  loadGlobalSettings().then(()=>{
+    const end = getEndDate();
+    if(end - Date.now() > 0){
+      startCountdown(end);  // 종료일 바뀌면 재시작
+    }
+  }).catch(()=>{});
+},180000);
 
 // ⭐ pending 카드 남은 시간(48h 카운트다운) - 6시간 이하 남은 경우 초 단위로 갱신
 setInterval(()=>{
@@ -5288,10 +5298,20 @@ setInterval(()=>{
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState !== 'visible') return;
   console.log('[Visibility] 탭 활성화 - 카운트다운 동기화');
-  // 1. D-day 카운트다운 즉시 갱신 (setInterval의 다음 tick까지 기다리지 않음)
-  const end = getEndDate();
-  if(end - Date.now() > 0){
-    startCountdown(end);  // 재시작하면서 즉시 tick 실행
+  // 0. ⭐ 전역 설정 재로드 (관리자가 종료일 바꿨을 수 있음)
+  if(GAS_URL && typeof loadGlobalSettings==='function'){
+    loadGlobalSettings().then(()=>{
+      const end = getEndDate();
+      if(end - Date.now() > 0){
+        startCountdown(end);
+      }
+    }).catch(()=>{});
+  } else {
+    // GAS_URL 없어도 로컬 갱신
+    const end = getEndDate();
+    if(end - Date.now() > 0){
+      startCountdown(end);
+    }
   }
   // 2. 5분 대기 카운트다운 즉시 갱신
   const timers = document.querySelectorAll('.wait-timer[id^="wait-timer-"]');
@@ -5331,19 +5351,89 @@ document.addEventListener('visibilitychange', ()=>{
 
 // ===== D-DAY 카운트다운 =====
 let cdInterval=null;
-function saveCountdown(){
+
+// ⭐ v4: 전역 설정 (Google Sheets 기반)
+let GLOBAL_SETTINGS = {
+  endDate: '2026-07-24',    // 이벤트 종료일 기본값 (Sheets 로드 실패 시 fallback)
+  countdownOn: 'true'
+};
+
+// ⭐ Google Sheets에서 전역 설정 로드
+async function loadGlobalSettings(){
+  if(!GAS_URL) return;
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'getSettings' })
+    });
+    const json = await res.json();
+    if(json.success && json.data){
+      GLOBAL_SETTINGS = { ...GLOBAL_SETTINGS, ...json.data };
+      // Sheets 값을 localStorage에 캐시 (오프라인/실패 시 fallback용)
+      localStorage.setItem('wr_settings_cache', JSON.stringify(GLOBAL_SETTINGS));
+      console.log('[Settings] 전역 설정 로드 완료:', GLOBAL_SETTINGS);
+      return GLOBAL_SETTINGS;
+    }
+  }catch(e){
+    console.warn('[Settings] Google Sheets 로드 실패, 캐시/기본값 사용:', e.message);
+    // localStorage 캐시 사용 (fallback)
+    const cached = localStorage.getItem('wr_settings_cache');
+    if(cached){
+      try{
+        GLOBAL_SETTINGS = { ...GLOBAL_SETTINGS, ...JSON.parse(cached) };
+        console.log('[Settings] 캐시된 설정 사용:', GLOBAL_SETTINGS);
+      }catch(err){}
+    }
+  }
+  return GLOBAL_SETTINGS;
+}
+
+// ⭐ 관리자가 설정 저장 (Google Sheets + localStorage 모두 저장)
+async function saveGlobalSetting(key, value){
+  const adminPw = ADMIN_PW; // 이미 관리자 인증된 상태에서만 호출됨
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'saveSettings', key, value, adminPw })
+    });
+    const json = await res.json();
+    if(json.success){
+      GLOBAL_SETTINGS[key] = String(value);
+      localStorage.setItem('wr_settings_cache', JSON.stringify(GLOBAL_SETTINGS));
+      return true;
+    } else {
+      console.error('[Settings] 저장 실패:', json.error);
+      return false;
+    }
+  }catch(e){
+    console.error('[Settings] 저장 실패 (네트워크):', e.message);
+    return false;
+  }
+}
+
+async function saveCountdown(){
   const dateVal=document.getElementById('s-enddate').value;
   if(!dateVal){showToast('⚠️ 종료일을 선택해주세요','error');return;}
   const endDate=new Date(dateVal+'T23:59:59').getTime();
+  // localStorage에도 저장 (fallback)
   localStorage.setItem('wr_enddate',endDate);
   localStorage.setItem('wr_countdown_on','1');
+  // ⭐ Google Sheets에 전역 저장
+  const ok = await saveGlobalSetting('endDate', dateVal);
+  const ok2 = await saveGlobalSetting('countdownOn', 'true');
   startCountdown(endDate);
-  showToast('✅ 카운트다운 시작!','success');
+  if(ok && ok2){
+    showToast('✅ 종료일이 전 사용자에게 적용됩니다!','success');
+  } else {
+    showToast('⚠️ 로컬에만 저장됨 (Google Sheets 저장 실패)','error');
+  }
 }
 function hideCountdown(){
   localStorage.setItem('wr_countdown_on','0');
   document.getElementById('countdown-bar').classList.add('hidden');
   if(cdInterval)clearInterval(cdInterval);
+  // ⭐ 전역 설정에도 반영
+  saveGlobalSetting('countdownOn', 'false');
 }
 function toggleCountdown(){
   const bar=document.getElementById('countdown-bar');
@@ -5381,18 +5471,30 @@ function startCountdown(endTime){
   }
   tick();cdInterval=setInterval(tick,1000);
 }
-// 챌린지 기본 종료일 — 관리자가 설정 패널에서 다른 날짜로 저장하면 그 값이 우선됨
-const DEFAULT_END_DATE='2026-06-30';
+// ⭐ 종료일 우선순위: 1) Google Sheets 전역 설정 → 2) localStorage 캐시 → 3) 하드코딩 기본값
+const DEFAULT_END_DATE='2026-07-24';  // Sheets/캐시 모두 실패 시 최종 fallback (이벤트 종료일로 갱신)
 function getEndDate(){
+  // 1) Google Sheets에서 로드된 전역 설정 최우선
+  if(GLOBAL_SETTINGS && GLOBAL_SETTINGS.endDate){
+    return new Date(GLOBAL_SETTINGS.endDate+'T23:59:59').getTime();
+  }
+  // 2) localStorage 캐시 (오프라인 대응)
   const saved=localStorage.getItem('wr_enddate');
-  return saved?Number(saved):new Date(DEFAULT_END_DATE+'T23:59:59').getTime();
+  if(saved) return Number(saved);
+  // 3) 하드코딩 기본값
+  return new Date(DEFAULT_END_DATE+'T23:59:59').getTime();
 }
-function initCountdown(){
-  // 상단 카운트다운 상시 표시 (저장된 종료일 있으면 사용, 없으면 기본값)
+async function initCountdown(){
+  // ⭐ Google Sheets에서 먼저 전역 설정 로드
+  await loadGlobalSettings();
   const end=getEndDate();
   startCountdown(end);
   const el=document.getElementById('s-enddate');
   if(el)el.value=new Date(end).toISOString().slice(0,10);
+  // 카운트다운 표시 여부 반영
+  if(GLOBAL_SETTINGS.countdownOn === 'false'){
+    document.getElementById('countdown-bar').classList.add('hidden');
+  }
 }
 
 // ===== INIT =====
