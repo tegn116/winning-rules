@@ -3307,8 +3307,12 @@ function formatDate(ts){
 function formatTimer(createdAt){
   const diff=(createdAt+48*3600000)-Date.now();
   if(diff<=0)return{text:'기한초과',urgent:true};
-  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000);
-  return{text:`${h}h ${m}m`,urgent:h<6};
+  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+  // ⭐ 6시간 이하 남았을 때는 초 단위 표시 (긴박감 + "안 가는 것 같은" 느낌 해소)
+  if(h<6){
+    return{text:`${h}h ${m}m ${s}s`,urgent:true};
+  }
+  return{text:`${h}h ${m}m`,urgent:false};
 }
 
 function buildChain(company){
@@ -5152,6 +5156,39 @@ window.addEventListener('click',e=>{
 // ===== AUTO REFRESH =====
 // 3분마다 자동 새로고침 (탭 활성 상태일 때만)
 setInterval(()=>{if(GAS_URL&&document.visibilityState==='visible')loadFromSheets();},180000);
+
+// ⭐ pending 카드 남은 시간(48h 카운트다운) - 6시간 이하 남은 경우 초 단위로 갱신
+setInterval(()=>{
+  if(document.visibilityState !== 'visible') return;
+  const now = Date.now();
+  const SIX_HOURS = 6*3600000;
+  const EXP = 48*3600000;
+  // pending 상태이면서 6시간 이하 남은 것만 대상
+  const targets = DATA.filter(d=>{
+    if(!d.isPending) return false;
+    const age = now - d.createdAt;
+    const remain = EXP - age;
+    return remain > 0 && remain < SIX_HOURS && age > 5*60*1000; // 5분 대기 끝난 것들
+  });
+  targets.forEach(d=>{
+    // 해당 카드의 pending-timer 요소를 직접 갱신 (전체 재렌더 안 함)
+    const bubble = document.querySelector(`[aria-label*="${d.nomineeName}"]`);
+    if(!bubble) return;
+    const timerEl = bubble.querySelector('.pending-timer:not(.wait-timer)');
+    if(!timerEl) return;
+    const diff = (d.createdAt + EXP) - now;
+    if(diff <= 0){
+      timerEl.textContent = '기한초과';
+      timerEl.style.color = 'var(--danger)';
+      return;
+    }
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    timerEl.textContent = `${h}h ${m}m ${s}s`;
+    timerEl.style.color = 'var(--danger)';
+  });
+}, 1000);
 // 1분마다 화면만 재렌더 (5분 대기 카운트다운 + 만료 처리)
 // ▶ 시간에 따라 표시가 바뀌는 카드(5분 대기 중 / 48시간 만료 경계)가 있을 때만 재렌더한다.
 //   불필요한 전체 재렌더를 막아 펼쳐둔 태그·스크롤 위치가 1분마다 초기화되는 문제를 줄인다.
@@ -5223,6 +5260,7 @@ function applyNomineeFromUrl() {
 
 // ⭐ 5분 대기 카운트다운 - 1초마다 pending wait-timer 요소만 가볍게 업데이트
 setInterval(()=>{
+  if(document.visibilityState !== 'visible') return; // 백그라운드에서는 스킵
   const timers = document.querySelectorAll('.wait-timer[id^="wait-timer-"]');
   let needsFullRender = false;
   timers.forEach(el=>{
@@ -5245,6 +5283,51 @@ setInterval(()=>{
     try{render();}catch(e){console.warn('5분 해제 render 실패',e);}
   }
 },1000);
+
+// ⭐ 탭 복귀 시 즉시 시간 동기화 (백그라운드에서 정지된 타이머 복구)
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState !== 'visible') return;
+  console.log('[Visibility] 탭 활성화 - 카운트다운 동기화');
+  // 1. D-day 카운트다운 즉시 갱신 (setInterval의 다음 tick까지 기다리지 않음)
+  const end = getEndDate();
+  if(end - Date.now() > 0){
+    startCountdown(end);  // 재시작하면서 즉시 tick 실행
+  }
+  // 2. 5분 대기 카운트다운 즉시 갱신
+  const timers = document.querySelectorAll('.wait-timer[id^="wait-timer-"]');
+  let needsFullRender = false;
+  timers.forEach(el=>{
+    const parent = el.closest('[data-wait-until]');
+    if(!parent) return;
+    const waitUntil = parseInt(parent.getAttribute('data-wait-until'),10);
+    if(!waitUntil) return;
+    const remain = waitUntil - Date.now();
+    if(remain <= 0){
+      needsFullRender = true;
+    } else {
+      const sec = Math.ceil(remain/1000);
+      const m = Math.floor(sec/60);
+      const s = sec%60;
+      el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+    }
+  });
+  // 3. 48시간 만료된 카드 갱신을 위해 전체 재렌더 필요할 수 있음
+  const now = Date.now();
+  const hasNewlyExpired = DATA.some(d=>{
+    const age = now - d.createdAt;
+    return age > 48*3600000 && age < 48*3600000 + 5*60*1000; // 방금 만료된 카드
+  });
+  if(needsFullRender || hasNewlyExpired){
+    _cache.dataHash={};
+    _cache.chainHTML={};
+    _cache.sortOrder=[];
+    try{render();}catch(e){console.warn('가시성 복귀 render 실패',e);}
+  }
+  // 4. 데이터 최신화 (마지막 로드로부터 시간 지났으면)
+  if(GAS_URL && typeof loadFromSheets==='function'){
+    loadFromSheets().catch(e=>console.warn('가시성 복귀 데이터 로드 실패',e));
+  }
+});
 
 // ===== D-DAY 카운트다운 =====
 let cdInterval=null;
@@ -5269,11 +5352,25 @@ function toggleCountdown(){
 }
 function startCountdown(endTime){
   const bar=document.getElementById('countdown-bar');
+  // ⭐ 종료일이 이미 지났으면 배너 숨김 (00:00:00:00 표시 방지)
+  if(endTime - Date.now() <= 0){
+    bar.classList.add('hidden');
+    if(cdInterval)clearInterval(cdInterval);
+    // 관리자에게만 콘솔 알림
+    console.warn('[D-day] 종료일(' + new Date(endTime).toLocaleDateString('ko-KR') + ')이 이미 지났습니다. 설정에서 새 종료일을 지정해주세요.');
+    return;
+  }
   bar.classList.remove('hidden');
   if(cdInterval)clearInterval(cdInterval);
   function tick(){
     const diff=endTime-Date.now();
-    if(diff<=0){['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id=>document.getElementById(id).textContent='00');clearInterval(cdInterval);return;}
+    if(diff<=0){
+      ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id=>document.getElementById(id).textContent='00');
+      clearInterval(cdInterval);
+      // 종료 도달 시 배너 숨김
+      bar.classList.add('hidden');
+      return;
+    }
     const days=Math.floor(diff/86400000),hours=Math.floor((diff%86400000)/3600000),mins=Math.floor((diff%3600000)/60000),secs=Math.floor((diff%60000)/1000);
     document.getElementById('cd-days').textContent=String(days).padStart(2,'0');
     document.getElementById('cd-hours').textContent=String(hours).padStart(2,'0');
