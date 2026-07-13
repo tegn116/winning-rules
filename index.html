@@ -167,6 +167,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .settings-panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:#fff;border-left:1px solid var(--border2);z-index:200;padding:24px;transform:translateX(100%);transition:transform .3s;overflow-y:auto;box-shadow:-8px 0 32px rgba(0,0,0,.08)}
 .settings-panel.open{transform:translateX(0)}
 .settings-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+.modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;z-index:10;transition:all .15s;line-height:1;padding:0}
+.modal-close:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+.modal{position:relative}
+/* ⭐ 태블릿/모바일 텍스트 선택 복사 지원 */
+input,textarea,select,.form-input,.form-textarea,.form-select,.tag-text-input{
+  -webkit-user-select:text!important;
+  -moz-user-select:text!important;
+  -ms-user-select:text!important;
+  user-select:text!important;
+  -webkit-touch-callout:default!important;
+}
+.bubble-comment,.modal-sub,.tag,.pending-name,.pending-from{
+  -webkit-user-select:text;
+  user-select:text;
+  -webkit-touch-callout:default;
+}
 .settings-title{font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--navy);margin-bottom:20px;padding-right:36px}
 .sg{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .sg:last-child{border-bottom:none}
@@ -2914,6 +2930,7 @@ var qrcode = function() {
 <!-- FORM MODAL -->
 <div class="modal-overlay" id="form-modal">
   <div class="modal">
+    <button class="modal-close" onclick="closeModal('form-modal')" aria-label="닫기">✕</button>
     <div class="modal-title">✍ 챌린지 참여</div>
     <div class="modal-sub">행동강령과 연결된 업무·일상의 순간을 한줄로 공유해주세요</div>
     <input type="hidden" id="f-parent-id">
@@ -2989,7 +3006,7 @@ var qrcode = function() {
     <div class="form-row">
       <label class="form-label">
         <span class="step-badge">3</span> 분야 해시태그 
-        <span style="font-weight:400;color:var(--text3)">— 선택 (있으면 좋아요)</span>
+        <span style="font-weight:400;color:var(--text3)">— 샵(#) 뒤에 키워드를 붙여보세요</span>
       </label>
       <div class="tag-input-wrap" id="tag-wrap" onclick="document.getElementById('tag-text').focus()">
         <input class="tag-text-input" id="tag-text" placeholder="#업무 #일상 #팀워크..." maxlength="20">
@@ -3001,7 +3018,7 @@ var qrcode = function() {
         <label class="form-label">
           <span class="step-badge">4</span> 지목할 동료 이름 *
         </label>
-        <input class="form-input" id="f-nominee" placeholder="김태근" type="text" maxlength="20" oninput="checkNomineeConflict()">
+        <input class="form-input" id="f-nominee" placeholder="" type="text" maxlength="20" oninput="checkNomineeConflict()">
       </div>
       <div class="form-row">
         <label class="form-label">직위 *</label>
@@ -3034,6 +3051,7 @@ var qrcode = function() {
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
+    <button class="modal-close" onclick="closeModal('edit-modal')" aria-label="닫기">✕</button>
     <div class="modal-title">✏️ 내용 수정</div>
     <div class="modal-sub">등록한 내용을 수정합니다</div>
     <input type="hidden" id="e-id">
@@ -3179,6 +3197,7 @@ var qrcode = function() {
 <!-- DELETE CONFIRM MODAL -->
 <div class="modal-overlay" id="delete-modal">
   <div class="modal" style="max-width:380px">
+    <button class="modal-close" onclick="closeModal('delete-modal')" aria-label="닫기">✕</button>
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:40px;margin-bottom:10px">🗑</div>
       <div class="modal-title" style="font-size:17px;justify-content:center">등록 삭제</div>
@@ -3205,6 +3224,7 @@ var qrcode = function() {
 <!-- SETTINGS AUTH MODAL -->
 <div class="modal-overlay" id="settings-auth-modal">
   <div class="modal" style="max-width:340px">
+    <button class="modal-close" onclick="closeModal('settings-auth-modal')" aria-label="닫기">✕</button>
     <div class="modal-title" style="font-size:17px">⚙ 설정</div>
     <div class="modal-sub">관리자 비밀번호를 입력해주세요</div>
     <div class="form-row">
@@ -3379,7 +3399,7 @@ function renderBubble(node,ci,depth=0){
         style="cursor:pointer;transition:all .2s;border:1.5px dashed ${pc};background:${CO_DIM[ci]};flex-direction:column;gap:6px;padding:14px 16px"
         onmouseenter="this.style.borderColor='${pc}';this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)';this.style.transform='translateY(-1px)'"
         onmouseleave="this.style.borderColor='${pc}';this.style.boxShadow='';this.style.transform=''">
-        <div style="font-size:13px;font-weight:700;color:${pc};text-align:center">✍ 여기를 클릭하여 참여하세요 →</div>
+        <div style="font-size:11px;font-weight:700;color:${pc};text-align:center;background:#fff;padding:4px 10px;border-radius:12px;border:1px solid ${pc}40;display:inline-flex;align-items:center;gap:4px;align-self:center">⏳ 48시간 이내 참여해주세요</div>
         <div style="display:flex;align-items:center;gap:10px;width:100%">
           <div class="pending-avatar" style="background:#fff;font-size:16px;flex-shrink:0">👤</div>
           <div class="pending-info">
@@ -3758,8 +3778,9 @@ function showPinAccessModal(parentNode, onSuccess){
   if(existing) existing.remove();
   
   const html = `
-    <div class="modal-overlay open" id="pin-access-modal" onclick="if(event.target===this)closePinAccessModal()">
+    <div class="modal-overlay open" id="pin-access-modal">
       <div class="modal" style="max-width:380px">
+        <button class="modal-close" onclick="closePinAccessModal()" aria-label="닫기">✕</button>
         <div style="text-align:center;margin-bottom:18px">
           <div style="font-size:42px;margin-bottom:8px">🔐</div>
           <div class="modal-title" style="font-size:17px;justify-content:center">참여 인증</div>
@@ -5113,11 +5134,10 @@ window.addEventListener('keydown',e=>{
       e.preventDefault(); t.click(); return;
     }
   }
-  // Esc로 열린 모달/설정 패널 닫기
+  // Esc로는 form-modal/edit-modal 닫지 않음 (실수로 입력 내용 사라짐 방지)
+  // 설정 패널만 Esc로 닫기
   if(e.key==='Escape'){
     document.getElementById('settings-panel')?.classList.remove('open');
-    ['form-modal','edit-modal','settings-auth-modal','delete-modal'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
-    const sm=document.getElementById('share-modal'); if(sm){closeModal('share-modal');sm.remove();}
   }
 });
 
@@ -5125,10 +5145,8 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('click',e=>{
   const sp=document.getElementById('settings-panel');
   if(sp.classList.contains('open')&&!sp.contains(e.target)&&!e.target.closest('[onclick*="Settings"]')&&!e.target.closest('[onclick*="settings"]'))sp.classList.remove('open');
-  ['form-modal','edit-modal','settings-auth-modal','delete-modal'].forEach(id=>{
-    const m=document.getElementById(id);
-    if(m&&m.classList.contains('open')&&e.target===m)m.classList.remove('open');
-  });
+  // ⭐ 모달은 X 버튼/취소 버튼으로만 닫히도록 (드래그 밖 클릭으로 인한 실수 방지)
+  // form-modal, edit-modal 등은 배경 클릭으로 닫히지 않음
 });
 
 // ===== AUTO REFRESH =====
