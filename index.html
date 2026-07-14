@@ -3262,7 +3262,7 @@ const CEOS={
 const CO_COLORS=['#00BFB6','#273646','#E85D26','#2E9E6B','#1565C0','#8B5CF6'];
 const CO_DIM=['rgba(0,191,182,.12)','rgba(39,54,70,.10)','rgba(232,93,38,.10)','rgba(46,158,107,.10)','rgba(21,101,192,.10)','rgba(139,92,246,.12)'];
 const CO_AVATARS=[['#E0FAF9','#007A72'],['#E8ECF0','#1b2a38'],['#FDE8DF','#9e2d05'],['#D5EFE2','#1d6e4a'],['#D6E4F5','#0d3c7a'],['#EDE9FE','#6D28D9']];
-const RULES_SHORT={'변화를 이끌거나, 비키거나':'변화를 이끌거나','완성보다 속도, 성공보다 시도':'완성보다 속도','배움은 생존을 위한 가장 공격적인 투자':'배움은 생존투자','외부 인사이트를 내부 자산으로 연결한다':'인사이트→자산','직급에 상관없이 전원이 의사결정에 참여해야 한다':'전원 의사결정','우리 팀을 넘어 우리 회사의 답을 찾는다':'회사의 답을','우리는 뒤에서 말하지 않는다':'뒤에서 말않기','동료의 의견을 듣는 것도 월급에 포함이다':'경청도 월급','다름을 인정하라. 내가 틀릴 수도 있다':'다름의 인정'};
+const RULES_SHORT={'변화를 이끌거나, 비키거나':'변화를 이끌거나','완성보다 속도, 성공보다 시도':'완성보다 속성','배움은 생존을 위한 가장 공격적인 투자':'배움은 생존투자','외부 인사이트를 내부 자산으로 연결한다':'인사이트→자산','직급에 상관없이 전원이 의사결정에 참여해야 한다':'전원 의사결정','우리 팀을 넘어 우리 회사의 답을 찾는다':'회사의 답을','우리는 뒤에서 말하지 않는다':'뒤에서 말않기','동료의 의견을 듣는 것도 월급에 포함이다':'경청도 월급','다름을 인정하라. 내가 틀릴 수도 있다':'다름의 인정'};
 const ADMIN_PW='admin1234';
 
 // ===== STATE =====
@@ -3287,7 +3287,31 @@ function setSyncing(v){
 }
 async function loadFromSheets(){
   setSyncing(true);
-  try{DATA=await apiCall('getAll');invalidateCache();render();}
+  try{
+    // ⭐ v5: 데이터 + 설정 한 번에 로드 (요청 수 절반)
+    let result = null;
+    try{
+      result = await apiCall('getAllWithSettings');
+    }catch(e){
+      // 폴백: v5 미배포 서버 → 기존 v4 방식(getAll) 사용
+      console.warn('[Load] getAllWithSettings 실패, getAll로 폴백:', e.message);
+      result = null;
+    }
+    
+    if(result && Array.isArray(result.entries)){
+      // v5 응답: apiCall이 이미 data를 벗겨줘서 result = { entries, settings }
+      DATA = result.entries;
+      if(result.settings){
+        GLOBAL_SETTINGS = { ...GLOBAL_SETTINGS, ...result.settings };
+        localStorage.setItem('wr_settings_cache', JSON.stringify(GLOBAL_SETTINGS));
+      }
+    } else {
+      // v4 폴백: getAll만 호출 (설정은 별도 로드 필요 없음, 캐시 사용)
+      DATA = await apiCall('getAll');
+    }
+    invalidateCache();
+    render();
+  }
   catch(e){showToast('⚠️ 로드 실패: '+e.message,'error');render();}
   finally{setSyncing(false);}
 }
@@ -4146,9 +4170,20 @@ async function toggleLike(nodeId, ci){
   
   renderTopLiked();
   
-  // 서버에 동기화 (백그라운드)
+  // 서버에 동기화 (백그라운드) - v6: sid 기반 add/remove로 동시성 안전
   try{
-    await apiCall('updateLikes',{id:nodeId, count:newLikes.length, likes:newLikes});
+    const result = await apiCall('updateLikes',{
+      id: nodeId,
+      count: newLikes.length,
+      likes: newLikes,           // 하위호환용
+      mySid: sid,                // ⭐ 내 세션 ID
+      myLike: newLiked,          // ⭐ true=추가, false=취소
+      company: node.company      // ⭐ 회사 힌트 (검색 범위 축소)
+    });
+    // 서버 응답으로 로컬 데이터 최신화 (다른 사용자 좋아요 포함)
+    if(result && Array.isArray(result.likes)){
+      node.likes = result.likes;
+    }
   }catch(e){
     console.error('좋아요 동기화 실패:', e);
     // 실패해도 UI는 유지 (다음 새로고침 때 다시 동기화)
@@ -4540,7 +4575,7 @@ function renderTagFilterBar(){
   ).join('');
   const allActive=ACTIVE_RULES.size===0&&ACTIVE_TAGS.size===0;
   document.getElementById('tag-all').className='tag-filter-chip '+(allActive?'active':'');
-  // 행동강령 칩 active 업데이트 — data-rule 속도로 안전하게
+  // 행동강령 칩 active 업데이트 — data-rule 속성으로 안전하게
   document.querySelectorAll('.rule-chip').forEach(c=>{
     if(c.id==='rule-all'){c.className='rule-chip '+(allActive?'active':'');return;}
     if(c.classList.contains('more-chip'))return;
@@ -5154,15 +5189,15 @@ window.addEventListener('click',e=>{
 });
 
 // ===== AUTO REFRESH =====
-// 3분마다 자동 새로고침 (탭 활성 상태일 때만) — 데이터 + 전역 설정
+// ⭐ v5: 3분마다 통합 새로고침 (탭 활성 상태일 때만) — 데이터 + 전역 설정 1회 호출
 setInterval(()=>{
   if(!GAS_URL || document.visibilityState!=='visible') return;
-  loadFromSheets();
-  // ⭐ 전역 설정도 함께 재로드 (관리자가 종료일 변경한 경우 다른 사용자에게도 반영)
-  loadGlobalSettings().then(()=>{
+  // loadFromSheets가 v5의 getAllWithSettings로 데이터+설정 통합 로드
+  loadFromSheets().then(()=>{
+    // 종료일이 바뀌었을 수 있으니 카운트다운 재시작
     const end = getEndDate();
     if(end - Date.now() > 0){
-      startCountdown(end);  // 종료일 바뀌면 재시작
+      startCountdown(end);
     }
   }).catch(()=>{});
 },180000);
@@ -5298,20 +5333,10 @@ setInterval(()=>{
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState !== 'visible') return;
   console.log('[Visibility] 탭 활성화 - 카운트다운 동기화');
-  // 0. ⭐ 전역 설정 재로드 (관리자가 종료일 바꿨을 수 있음)
-  if(GAS_URL && typeof loadGlobalSettings==='function'){
-    loadGlobalSettings().then(()=>{
-      const end = getEndDate();
-      if(end - Date.now() > 0){
-        startCountdown(end);
-      }
-    }).catch(()=>{});
-  } else {
-    // GAS_URL 없어도 로컬 갱신
-    const end = getEndDate();
-    if(end - Date.now() > 0){
-      startCountdown(end);
-    }
+  // ⭐ v5: 로컬 카운트다운 즉시 갱신 (Sheets 로드는 아래에서 통합)
+  const end = getEndDate();
+  if(end - Date.now() > 0){
+    startCountdown(end);
   }
   // 2. 5분 대기 카운트다운 즉시 갱신
   const timers = document.querySelectorAll('.wait-timer[id^="wait-timer-"]');
@@ -5343,9 +5368,14 @@ document.addEventListener('visibilitychange', ()=>{
     _cache.sortOrder=[];
     try{render();}catch(e){console.warn('가시성 복귀 render 실패',e);}
   }
-  // 4. 데이터 최신화 (마지막 로드로부터 시간 지났으면)
+  // 4. ⭐ v5: 데이터 + 설정 통합 로드 (1회 호출로 종료일 최신화도 함께)
   if(GAS_URL && typeof loadFromSheets==='function'){
-    loadFromSheets().catch(e=>console.warn('가시성 복귀 데이터 로드 실패',e));
+    loadFromSheets().then(()=>{
+      const end2 = getEndDate();
+      if(end2 - Date.now() > 0){
+        startCountdown(end2);  // 종료일 바뀌었을 수 있음
+      }
+    }).catch(e=>console.warn('가시성 복귀 데이터 로드 실패',e));
   }
 });
 
@@ -5485,8 +5515,15 @@ function getEndDate(){
   return new Date(DEFAULT_END_DATE+'T23:59:59').getTime();
 }
 async function initCountdown(){
-  // ⭐ Google Sheets에서 먼저 전역 설정 로드
-  await loadGlobalSettings();
+  // ⭐ v5: 캐시 우선 (loadFromSheets가 나중에 getAllWithSettings로 최신값 갱신)
+  // 시작 시점에는 Sheets 별도 호출 X (요청 수 절감)
+  try{
+    const cached = localStorage.getItem('wr_settings_cache');
+    if(cached){
+      const parsed = JSON.parse(cached);
+      GLOBAL_SETTINGS = { ...GLOBAL_SETTINGS, ...parsed };
+    }
+  }catch(e){}
   const end=getEndDate();
   startCountdown(end);
   const el=document.getElementById('s-enddate');
