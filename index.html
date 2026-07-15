@@ -3503,7 +3503,7 @@ function renderBubble(node,ci,depth=0){
   <div class="bubble-wrap">
     ${childrenHtml}
     ${(node.children||[]).length>0?`<div class="connector" style="background:${c}40"></div>`:''}
-    <div class="bubble ${isRoot?'root-bubble':''} ${postExpired?'expired':''}" style="border-color:${isRoot?c:''}">
+    <div class="bubble ${isRoot?'root-bubble':''} ${postExpired?'expired':''}" data-card-id="${node.id}" style="border-color:${isRoot?c:''}">
       ${postExpired?`<div style="position:absolute;top:8px;right:8px;font-size:9px;background:var(--bg3);color:var(--text3);padding:2px 7px;border-radius:10px;border:1px solid var(--border);font-weight:600">⏱ 만료 · 집계 제외</div>`:''}
       <div class="bubble-head">
         <div class="bubble-avatar" style="background:${av[0]};color:${av[1]};border-color:${c}">${getInitials(node.name)}</div>
@@ -4844,7 +4844,7 @@ function renderTopLiked(){
   list.innerHTML=top.map(d=>{
     const ci=COMPANIES.indexOf(d.company);
     const c=CO_COLORS[ci>=0?ci:0];
-    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.2);color:var(--text);cursor:pointer" onclick="document.getElementById('like-${d.id}')?.closest('.bubble-wrap')?.scrollIntoView({behavior:'smooth',block:'center'})">
+    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.2);color:var(--text);cursor:pointer" onclick="scrollToCard('${jsStr(d.id)}','${jsStr(d.company)}')">
       <span style="width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0"></span>
       <strong>${escapeHtml(d.name)}</strong>
       <span style="color:#e74c3c;font-weight:700">❤️ ${d.likes}</span>
@@ -4852,6 +4852,50 @@ function renderTopLiked(){
   }).join('');
   // ⭐ 인기글도 2줄 넘으면 더보기 버튼 표시
   setTimeout(()=>{if(typeof checkFilterOverflow==='function')checkFilterOverflow();}, 50);
+}
+
+// ⭐ 특정 카드로 부드럽게 스크롤 (가로+세로 모두 처리)
+function scrollToCard(cardId, companyName){
+  // 1) 카드 요소 찾기 (여러 후보 시도)
+  let target = document.getElementById('bubble-'+cardId) 
+             || document.querySelector(`[data-card-id="${cardId}"]`)
+             || document.getElementById('like-'+cardId)?.closest('.bubble-wrap');
+  
+  // 2) 카드를 못 찾으면 회사 컬럼으로 스크롤
+  if(!target && companyName){
+    target = document.querySelector(`[data-company="${companyName}"]`);
+  }
+  if(!target) return;
+  
+  // 3) 태블릿 가로 스크롤 컨테이너 (.four-col) 대응
+  const fourCol = target.closest('.four-col');
+  if(fourCol && window.getComputedStyle(fourCol).overflowX === 'auto'){
+    // 가로 스크롤 컨테이너 안에서는 컬럼 wrapper 기준으로 가로 스크롤
+    const colWrap = target.closest('[data-company]') || target;
+    const rect = colWrap.getBoundingClientRect();
+    const containerRect = fourCol.getBoundingClientRect();
+    const scrollLeft = fourCol.scrollLeft + rect.left - containerRect.left - 20;
+    fourCol.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+  }
+  
+  // 4) 페이지 세로 스크롤 (nav-top 높이만큼 offset)
+  const navTop = document.querySelector('.nav-top');
+  const offset = (navTop ? navTop.offsetHeight : 0) + 20;
+  const targetRect = target.getBoundingClientRect();
+  const y = targetRect.top + window.pageYOffset - offset;
+  window.scrollTo({ top: y, behavior: 'smooth' });
+  
+  // 5) 카드 하이라이트 효과 (0.5초)
+  setTimeout(() => {
+    if(target && target.classList){
+      target.style.transition = 'background 0.3s';
+      const originalBg = target.style.background;
+      target.style.background = 'rgba(255, 223, 0, 0.2)';
+      setTimeout(() => {
+        target.style.background = originalBg;
+      }, 800);
+    }
+  }, 400);
 }
 
 // ===== 첫 화면 토글 (필터 / 인기글) =====
