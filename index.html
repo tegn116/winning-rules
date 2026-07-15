@@ -3364,6 +3364,19 @@ function buildChain(company){
 
 function isExpired(createdAt){return Date.now()>(createdAt+48*3600000);}
 
+// ⭐ 응답 만료 판정: 부모가 지목한 후 48시간을 초과해서 늦게 등록한 카드
+//   - root(첫 게시글)는 부모가 없으므로 항상 false
+//   - 카드가 등록된 지 오래 지났어도 부모 대비 48시간 이내에 등록됐다면 만료 아님
+function isLateCard(d, byId){
+  if(!d || !d.parentId) return false;
+  const map = byId || (function(){
+    const m={}; DATA.forEach(x=>{m[x.id]=x;}); return m;
+  })();
+  const parent = map[d.parentId];
+  if(!parent) return false;
+  return (d.createdAt - parent.createdAt) > 48*3600000;
+}
+
 function renderBubble(node,ci,depth=0){
   if(node.isPending){
     const t=formatTimer(node.createdAt);
@@ -3586,7 +3599,9 @@ function renderColumn(co, ci){
 
   const roots=buildChain(co);
   const c=CO_COLORS[ci];
-  const cnt=DATA.filter(d=>d.company===co && !isExpired(d.createdAt)).length;
+  // ⭐ 참여수: 응답 만료(late) 카드만 제외 (자체 시간 만료로 제외되지 않음)
+  const byIdCol={}; DATA.forEach(d=>{byIdCol[d.id]=d;});
+  const cnt=DATA.filter(d=>d.company===co && !isLateCard(d, byIdCol)).length;
   const todayN=getTodayCount(co);
   const burning=todayN>=FIRE_MIN;
   const heat=getHeat(todayN);
@@ -3668,21 +3683,27 @@ function render(dirtyCompany=null){
 }
 
 // ===== 🏆 그룹사 리더보드 (가중합: 참여 + 좋아요 + 릴레이 콤보 - 만료 페널티) =====
-// 참여 카운트는 '48시간 활성' 기준으로 통일 (만료 카드는 만료 페널티로만 반영)
+// 참여 카운트는 '응답 만료(late)' 기준으로 제외 (자체 시간 만료는 제외 대상 아님)
 function getCompanyScore(co){
   const items=DATA.filter(d=>d.company===co);
-  // ⭐ 참여수는 만료되지 않은 카드만 카운트 (컬럼 헤더와 통일)
-  const activeItems=items.filter(d=>!isExpired(d.createdAt));
+  const byId={}; items.forEach(d=>{byId[d.id]=d;});
+  // ⭐ 참여수: 응답 만료 카드만 제외 (컬럼 헤더와 통일)
+  const activeItems=items.filter(d=>!isLateCard(d, byId));
   const participation=activeItems.length;
   const likes=items.reduce((s,d)=>s+((d.likes||[]).length),0);   // 받은 좋아요 합 (만료 카드도 유효)
   
-  // 릴레이 콤보: 루트=0, 이어받을수록 +1. 최장 콤보를 계산.
-  const byId={}; items.forEach(d=>byId[d.id]=d);
+  // 릴레이 콤보: 루트=0, 이어받을수록 +1. 만료된 카드에서 끊기고 1콤보부터 재시작.
   const cache={};
+  // ⭐ 카드가 '응답 만료' 상태인지 (부모 등록 후 48h 초과 응답)
+  function isLate(d){
+    return isLateCard(d, byId);
+  }
   function depth(d){
     if(!d) return 0;
     if(cache[d.id]!=null) return cache[d.id];
     cache[d.id]=0; // 순환 참조 가드
+    // ⭐ 만료된 카드는 콤보 끊김 → 새로운 시작점 (depth=0, 콤보=1)
+    if(isLate(d)){ cache[d.id]=0; return 0; }
     const p=d.parentId&&byId[d.parentId];
     const v=p?depth(p)+1:0;
     cache[d.id]=v; return v;
@@ -3691,11 +3712,7 @@ function getCompanyScore(co){
   // ⭐ 만료 페널티: 지목 후 48시간 내 응답 안 한 횟수 (만료 콤보 끊김)
   let expiredCount = 0;
   items.forEach(d=>{
-    if(!d.parentId) return; // root는 제외
-    const parent = byId[d.parentId];
-    if(!parent) return;
-    const responseTime = d.createdAt - parent.createdAt;
-    if(responseTime > 48*3600000) expiredCount++;
+    if(isLate(d)) expiredCount++;
   });
   
   // 릴레이 콤보 (가장 긴 체인의 길이 = 최장 콤보)
