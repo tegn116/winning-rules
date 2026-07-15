@@ -2997,7 +2997,7 @@ var qrcode = function() {
     <div class="form-row">
       <label class="form-label">
         <span class="step-badge">1</span> 연결할 행동강령 * 
-        <span style="font-weight:400;color:var(--text3)">— 어떤 강령을 실천했나요?</span>
+        <span style="font-weight:400;color:var(--text3)">— 어떤 행동강령에 해당 되나요?</span>
       </label>
       <select class="form-select" id="f-rule" onchange="updateRuleHint()">
         <option value="">9가지 중 하나를 선택하세요</option>
@@ -3016,7 +3016,7 @@ var qrcode = function() {
     <div class="form-row">
       <label class="form-label">
         <span class="step-badge">2</span> 한줄평 * 
-        <span style="font-weight:400;color:var(--text3)">— 강령과 연결된 순간을 자유롭게</span>
+        <span style="font-weight:400;color:var(--text3)">— 외부에서 얻은 인사이트를 자유롭게 작성해주세요</span>
       </label>
       <textarea class="form-textarea" id="f-comment" maxlength="300" placeholder="예: 오늘 고객 미팅에서 미처 몰랐던 니즈를 발견했다. 듣는 것이 먼저라는 걸 다시 느꼈다."></textarea>
     </div>
@@ -3976,7 +3976,7 @@ function openFormFromPending(company, parentId, fromName, nomineeName, isLate=fa
             <div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:3px">⚠️ 48시간 초과로 만료 페널티(-10점)가 적용됩니다</div>
             ${previewHtml}
             <div style="margin-top:14px;padding:10px 12px;background:#FFF7ED;border-radius:8px;border:1px dashed #FBBF24;font-size:12px;color:#92400E;text-align:left;font-weight:500">
-              📝 <strong>이제 내 이야기를 나눠주세요!</strong><br>
+              📝 <strong>외부에서 얻은 인사이트를 Winning Rules와 연결지어 작성해주세요!</strong><br>
               <span style="font-weight:400;line-height:1.6">1️⃣ 행동강령 선택 → 2️⃣ 한줄평 작성 → 3️⃣ 다음 주자 지목</span>
             </div>
           `;
@@ -3985,7 +3985,7 @@ function openFormFromPending(company, parentId, fromName, nomineeName, isLate=fa
             <div style="color:${c};font-weight:700">🎯 <strong>${myName}${myRole?' '+myRole:''}</strong>님, 릴레이가 도착했어요!</div>
             ${previewHtml}
             <div style="margin-top:14px;padding:10px 12px;background:${CO_DIM[COMPANIES.indexOf(company)]||'#f5f6f8'};border-radius:8px;border:1px dashed ${c}55;font-size:12px;color:var(--text2);text-align:left;font-weight:500">
-              📝 <strong>이제 내 이야기를 나눠주세요!</strong><br>
+              📝 <strong>외부에서 얻은 인사이트를 Winning Rules와 연결지어 작성해주세요!</strong><br>
               <span style="font-weight:400;line-height:1.6">1️⃣ 행동강령 선택 → 2️⃣ 한줄평 작성 → 3️⃣ 다음 주자 지목</span>
             </div>
           `;
