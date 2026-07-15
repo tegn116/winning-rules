@@ -210,10 +210,24 @@ input,textarea,select,.form-input,.form-textarea,.form-select,.tag-text-input{
 .fab:active{transform:scale(.95)}
 
 @media(max-width:1100px){
-  .four-col{grid-template-columns:repeat(4,1fr)}
+  /* ⭐ 태블릿·중간 화면: 6개 컬럼 고정 + 가로 스와이프 스크롤 */
+  .four-col{
+    grid-template-columns:repeat(6, minmax(240px, 1fr));
+    overflow-x:auto;
+    overflow-y:visible;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
+    padding-bottom:8px;
+  }
+  .four-col > div{
+    scroll-snap-align:start;
+  }
 }
 @media(max-width:900px){
-  .four-col{grid-template-columns:repeat(2,1fr)}
+  /* 태블릿: 컬럼 폭을 좀 좁게 조정 (더 많이 보이게) */
+  .four-col{
+    grid-template-columns:repeat(6, minmax(220px, 1fr));
+  }
   .main{padding:20px 16px}
   .nav{padding:12px 16px}
   .hero-inner{flex-direction:column}
