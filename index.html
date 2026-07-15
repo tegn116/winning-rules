@@ -4347,7 +4347,7 @@ function showShareModal(nomineeName, parentId, company, rule){
           ${link}
         </div>
 
-        <button class="btn btn-accent" style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-bottom:18px;font-weight:700" onclick="copyShareLink('${jsStr(link)}')">
+        <button class="btn btn-accent" style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-bottom:18px;font-weight:700" onclick="copyShareLink('${jsStr(link)}', '${jsStr(nomineeName)}')">
           📋 링크 복사하기
         </button>
 
@@ -4450,6 +4450,13 @@ function downloadQR(nomineeName){
 }
 
 // ⭐ 게시물 옆 릴레이 링크 복사 (5분 룰 + 백도어 방지)
+// ⭐ 릴레이 공유 텍스트 생성 (링크 + 안내 문구)
+function buildShareText(nomineeName, link){
+  const name = (nomineeName || '').trim();
+  const namePart = name ? `🎯 ${name}님, INSIGHT OUT 릴레이가 도착했어요!\n\n` : '';
+  return `${namePart}외부에서 얻은 인사이트를 Winning Rules와 연결지어 작성해주세요.\n\n${link}`;
+}
+
 function copyRelayLink(nodeId){
   const node = DATA.find(n=>n.id===nodeId);
   if(!node){showToast('❌ 게시글을 찾을 수 없어요','error');return;}
@@ -4466,14 +4473,15 @@ function copyRelayLink(nodeId){
     return;
   }
   
-  // 5분 경과 → 링크 생성 + 복사
+  // 5분 경과 → 링크 생성 + 복사 (안내 문구 포함)
   const link = generateNomineeLink(node.id, node.nomineeName, node.company, node.rule, node.comment, node.name);
-  navigator.clipboard.writeText(link).then(()=>{
+  const shareText = buildShareText(node.nomineeName, link);
+  navigator.clipboard.writeText(shareText).then(()=>{
     showToast('✅ 릴레이 링크가 복사되었어요!','success');
   }).catch(err=>{
     // 폴백
     const ta = document.createElement('textarea');
-    ta.value = link;
+    ta.value = shareText;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
@@ -4482,13 +4490,15 @@ function copyRelayLink(nodeId){
   });
 }
 
-function copyShareLink(link){
-  navigator.clipboard.writeText(link).then(()=>{
+function copyShareLink(link, nomineeName){
+  // ⭐ 안내 문구 포함해서 복사
+  const shareText = buildShareText(nomineeName, link);
+  navigator.clipboard.writeText(shareText).then(()=>{
     showToast('✅ 링크가 복사되었습니다!','success');
   }).catch(err=>{
     // 폴백: 텍스트 영역 사용
     const ta = document.createElement('textarea');
-    ta.value = link;
+    ta.value = shareText;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
