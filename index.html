@@ -4789,7 +4789,8 @@ function applyFilters(){
 }
 
 function renderTopLiked(){
-  const top=getTopLiked().slice(0,5);
+  // ⭐ 좋아요 1개 이상 받은 카드 모두 표시 (2줄 넘으면 더보기 버튼으로 자동 접힘)
+  const top=getTopLiked();
   const bar=document.getElementById('top-liked-bar');
   const list=document.getElementById('top-liked-list');
   if(!bar||!list)return;
