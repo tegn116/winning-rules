@@ -3279,7 +3279,7 @@ const CEOS={
 const CO_COLORS=['#00BFB6','#273646','#E85D26','#2E9E6B','#1565C0','#8B5CF6'];
 const CO_DIM=['rgba(0,191,182,.12)','rgba(39,54,70,.10)','rgba(232,93,38,.10)','rgba(46,158,107,.10)','rgba(21,101,192,.10)','rgba(139,92,246,.12)'];
 const CO_AVATARS=[['#E0FAF9','#007A72'],['#E8ECF0','#1b2a38'],['#FDE8DF','#9e2d05'],['#D5EFE2','#1d6e4a'],['#D6E4F5','#0d3c7a'],['#EDE9FE','#6D28D9']];
-const RULES_SHORT={'변화를 이끌거나, 비키거나':'변화를 이끌거나','완성보다 속도, 성공보다 시도':'완성보다 속성','배움은 생존을 위한 가장 공격적인 투자':'배움은 생존투자','외부 인사이트를 내부 자산으로 연결한다':'인사이트→자산','직급에 상관없이 전원이 의사결정에 참여해야 한다':'전원 의사결정','우리 팀을 넘어 우리 회사의 답을 찾는다':'회사의 답을','우리는 뒤에서 말하지 않는다':'뒤에서 말않기','동료의 의견을 듣는 것도 월급에 포함이다':'경청도 월급','다름을 인정하라. 내가 틀릴 수도 있다':'다름의 인정'};
+const RULES_SHORT={'변화를 이끌거나, 비키거나':'변화를 이끌거나','완성보다 속도, 성공보다 시도':'완성보다 속도','배움은 생존을 위한 가장 공격적인 투자':'배움은 생존투자','외부 인사이트를 내부 자산으로 연결한다':'인사이트→자산','직급에 상관없이 전원이 의사결정에 참여해야 한다':'전원 의사결정','우리 팀을 넘어 우리 회사의 답을 찾는다':'회사의 답을','우리는 뒤에서 말하지 않는다':'뒤에서 말않기','동료의 의견을 듣는 것도 월급에 포함이다':'경청도 월급','다름을 인정하라. 내가 틀릴 수도 있다':'다름의 인정'};
 const ADMIN_PW='admin1234';
 
 // ===== STATE =====
@@ -4621,7 +4621,7 @@ function renderTagFilterBar(){
   ).join('');
   const allActive=ACTIVE_RULES.size===0&&ACTIVE_TAGS.size===0;
   document.getElementById('tag-all').className='tag-filter-chip '+(allActive?'active':'');
-  // 행동강령 칩 active 업데이트 — data-rule 속성으로 안전하게
+  // 행동강령 칩 active 업데이트 — data-rule 속도으로 안전하게
   document.querySelectorAll('.rule-chip').forEach(c=>{
     if(c.id==='rule-all'){c.className='rule-chip '+(allActive?'active':'');return;}
     if(c.classList.contains('more-chip'))return;
