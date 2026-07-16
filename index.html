@@ -38,6 +38,46 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .nav-logo img.logo{height:32px;width:auto}
 .nav-divider{width:1px;height:24px;background:var(--border2)}
 .nav-title{font-size:13px;font-weight:600;color:var(--text2)}
+
+/* 🎁 붐업 티커 배너 */
+.boomup-ticker{
+  background:#F5F5F7;
+  border-top:1px solid #E5E5EA;
+  border-bottom:1px solid #E5E5EA;
+  padding:9px 0;
+  overflow:hidden;
+  position:relative;
+}
+.boomup-track{
+  display:flex;
+  gap:24px;
+  white-space:nowrap;
+  animation:boomup-scroll 30s linear infinite;
+  width:max-content;
+}
+.boomup-item{
+  font-size:13px;
+  color:#5A5A5F;
+  font-weight:500;
+  letter-spacing:-0.01em;
+  padding-right:24px;
+}
+.boomup-item strong{
+  font-weight:700;
+  color:#2C2C2E;
+}
+.boomup-ticker:hover .boomup-track{
+  animation-play-state:paused;
+}
+@keyframes boomup-scroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+@media(max-width:640px){
+  .boomup-ticker{padding:8px 0;}
+  .boomup-item{font-size:12px;}
+  .boomup-track{animation-duration:22s;}
+}
 #sync-indicator{display:none;align-items:center;gap:6px;font-size:12px;color:var(--accent);padding:5px 12px;background:var(--accent-dim);border-radius:20px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{width:8px;height:8px;border-radius:50%;border:2px solid var(--accent);border-top-color:transparent;animation:spin .7s linear infinite}
@@ -2825,6 +2865,14 @@ var qrcode = function() {
     </div>
   </div>
 </nav>
+
+<!-- 🎁 붐업 티커 배너 (네비 아래 별도 행) -->
+<div class="boomup-ticker" id="boomup-ticker">
+  <div class="boomup-track">
+    <span class="boomup-item">🎁 <strong>챌린지 종료 후 1등 그룹사 참여자 전원에게 커피쿠폰 제공!</strong> · 놓치지 마세요! · 지금 참여하고 우리 그룹사를 1등으로 만들어요 ·</span>
+    <span class="boomup-item">🎁 <strong>챌린지 종료 후 1등 그룹사 참여자 전원에게 커피쿠폰 제공!</strong> · 놓치지 마세요! · 지금 참여하고 우리 그룹사를 1등으로 만들어요 ·</span>
+  </div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
