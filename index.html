@@ -5541,7 +5541,7 @@ async function loadGlobalSettings(){
       body: JSON.stringify({ action:'getSettings' })
     });
     const json = await res.json();
-    if(json.success && json.data){
+    if(json.ok && json.data){
       GLOBAL_SETTINGS = { ...GLOBAL_SETTINGS, ...json.data };
       // Sheets 값을 localStorage에 캐시 (오프라인/실패 시 fallback용)
       localStorage.setItem('wr_settings_cache', JSON.stringify(GLOBAL_SETTINGS));
@@ -5571,7 +5571,7 @@ async function saveGlobalSetting(key, value){
       body: JSON.stringify({ action:'saveSettings', key, value, adminPw })
     });
     const json = await res.json();
-    if(json.success){
+    if(json.ok){
       GLOBAL_SETTINGS[key] = String(value);
       localStorage.setItem('wr_settings_cache', JSON.stringify(GLOBAL_SETTINGS));
       return true;
