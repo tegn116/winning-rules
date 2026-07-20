@@ -5721,6 +5721,26 @@ async function initApp(){
       console.log('[Init] Google Sheets 데이터 로드 중...');
       await loadFromSheets();
       console.log('[Init] 데이터 로드 완료, DATA 개수:', DATA.length);
+      // ⭐ Sheets에서 받아온 최신 설정으로 카운트다운/입력값 재동기화
+      // (initCountdown은 캐시 기반이라 여기서 최신값으로 덮어써야 함)
+      const freshEnd = getEndDate();
+      if(freshEnd - Date.now() > 0){
+        startCountdown(freshEnd);
+      } else {
+        document.getElementById('countdown-bar').classList.add('hidden');
+        if(cdInterval) clearInterval(cdInterval);
+      }
+      const enddateEl = document.getElementById('s-enddate');
+      if(enddateEl){
+        try{
+          const d = new Date(freshEnd);
+          if(!isNaN(d.getTime())) enddateEl.value = d.toISOString().slice(0,10);
+        }catch(e){console.warn('[Countdown] 재동기화 날짜 표시 오류:', e);}
+      }
+      if(GLOBAL_SETTINGS.countdownOn === 'false'){
+        document.getElementById('countdown-bar').classList.add('hidden');
+        if(cdInterval) clearInterval(cdInterval);
+      }
     } else {
       console.warn('[Init] GAS_URL 없음 - 설정 필요');
       showToast('⚙ 설정에서 Google Sheets URL을 입력해주세요','error');
